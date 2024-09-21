@@ -1,4 +1,4 @@
-import mapboxgl from "mapbox-gl";
+import mapboxgl, { FilterSpecification } from "mapbox-gl";
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useEffect, useRef, useState } from "react";
 import logoImage from '../assets/logo_colour_tight.png'; // Add this import
@@ -50,7 +50,7 @@ function PerSquareMetreMap() {
     function setPsqmFilter(minPrice: number, maxPrice: number) {
         if (!map.current) return;
         console.log(minPrice, maxPrice)
-        const filter = ["all", [">=",["get", "priceper_median"], minPrice], ["<=", ["get", "priceper_median"], maxPrice]]
+        const filter = ["all", [">=",["get", "priceper_median"], minPrice], ["<=", ["get", "priceper_median"], maxPrice]] as FilterSpecification
         map.current.setFilter('msoa', filter)
         map.current.setFilter('lad', filter)
 
