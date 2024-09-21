@@ -21,3 +21,109 @@ body, #root {
   width: 100%;
   height: 100%;
 }
+
+
+
+
+.price-slider {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1000;
+  background-color: #fff;
+  border-radius: 5px;
+  padding: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 400px;
+}
+
+.slider-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  max-height: 50px;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+  opacity: 1;
+}
+
+.slider-row label {
+  flex: 0 0 100px;
+  margin-right: 10px;
+}
+
+.slider-row input[type="range"] {
+  flex: 1;
+}
+
+@media (max-width: 450px) {
+  .price-slider {
+    width: calc(100% - 40px);
+    border-radius: 0;
+  }
+}
+
+.slider-row.hidden {
+  max-height: 0;
+  opacity: 0;
+  margin-bottom: 0;
+}
+
+.price-slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* margin-bottom: 10px; */
+}
+
+.price-slider-header h3 {
+  margin: 0;
+}
+
+.toggle-button {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 5px;
+  color: #333; /* Adjust color to match your design */
+  transition: opacity 0.3s ease;
+}
+
+.toggle-button:hover {
+  opacity: 0.7;
+}
+
+.map-logo {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  max-width: 50%;
+  max-height: 10vh;
+  opacity: 0.4;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  border-radius: 10px;
+  padding: 5px;
+  background-color: #fff;
+}
+
+@media (max-width: 768px) {
+  .map-logo {
+    top: auto;
+    right: auto;
+    bottom: 40px; /* Increased from 10px to position it above the Mapbox logo */
+    left: 10px;
+    max-width: 30%; /* Reduced from 50% to make it smaller on mobile */
+    max-height: 8vh; /* Reduced from 10vh to make it smaller on mobile */
+  }
+}
+
+.mapboxgl-ctrl-attrib-inner {
+  font-size: 12px;
+  line-height: 24px;
+  padding: 0 5px;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 3px;
+}

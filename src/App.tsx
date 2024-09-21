@@ -1,5 +1,6 @@
 
 import './App.css'
+import Home from './Pages/Home'
 import PerSquareMetreMap from './Pages/PerSquareMetreMap'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
@@ -13,9 +14,7 @@ function App() {
     },
     {
       path: '/',
-      element: <div>
-        <h1>Home</h1>
-      </div>,
+      element: <Home />,
     },
   ])
 
