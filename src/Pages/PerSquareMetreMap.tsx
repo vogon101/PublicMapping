@@ -13,6 +13,7 @@ function PerSquareMetreMap() {
     const popup = useRef<mapboxgl.Popup | null>(null);
     const [minPrice, setMinPrice] = useState<number>(0);
     const [maxPrice, setMaxPrice] = useState<number>(100000);
+    const [opacity, setOpacity] = useState<number>(1);
     const [showSliders, setShowSliders] = useState<boolean>(true);
 
     function initialiseMap() {
@@ -53,7 +54,6 @@ function PerSquareMetreMap() {
         const filter = ["all", [">=",["get", "priceper_median"], minPrice], ["<=", ["get", "priceper_median"], maxPrice]] as FilterSpecification
         map.current.setFilter('msoa', filter)
         map.current.setFilter('lad', filter)
-
     }
 
     function onClick(event: mapboxgl.MapMouseEvent) {
@@ -89,13 +89,30 @@ function PerSquareMetreMap() {
     }
 
     useEffect(() => {
+        if (map.current && map.current.isStyleLoaded()) {
+            console.log(map.current.getPaintProperty('msoa', 'fill-opacity'))
+            map.current.setPaintProperty('msoa', 'fill-opacity', opacity);
+            map.current.setPaintProperty('lad', 'fill-opacity', [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                8,
+                opacity,
+                8.5,
+                0
+            ]);
+        }
+    }, [opacity])
+
+    useEffect(() => {
         if (!mapContainer.current) setTimeout(initialiseMap, 100);
         else initialiseMap();
     }, []);
 
     useEffect(() => {
-        if (!map.current || !map.current.isStyleLoaded()) return;
-        setPsqmFilter(minPrice, maxPrice)
+        if (map.current && map.current.isStyleLoaded()) {
+            setPsqmFilter(minPrice, maxPrice)
+        }
     }, [minPrice, maxPrice])
 
     return (
@@ -107,7 +124,7 @@ function PerSquareMetreMap() {
             <img src={logoImage} alt="Logo" className="map-logo" />
             <div className="price-slider">
                 <div className="price-slider-header">
-                    <h3>Price Filter</h3>
+                    <h3>Controls</h3>
                     <button className="toggle-button" onClick={() => setShowSliders(!showSliders)}>
                         {showSliders ? '▼' : '▶'}
                     </button>
@@ -135,6 +152,14 @@ function PerSquareMetreMap() {
                         if (newMaxPrice < minPrice) {
                             setMinPrice(newMaxPrice * 0.9);
                         }
+                    }} />
+                </div>
+                <div className={`slider-row ${showSliders ? 'visible' : 'hidden'}`}>
+                    <label>
+                        <b>Opacity:</b><br/>{opacity * 100}%
+                    </label>
+                    <input type="range" min="0" max="1" step="0.05" value={opacity} onChange={(e) => {
+                        setOpacity(Number(e.target.value));
                     }} />
                 </div>
             </div>
