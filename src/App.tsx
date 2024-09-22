@@ -1,8 +1,8 @@
 
-import './App.css'
-import Home from './Pages/Home'
-import PerSquareMetreMap from './Pages/PerSquareMetreMap'
+import Home from './pages/Home'
+import PerSquareMetreMap from './pages/PerSquareMetreMap'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import TestMapPage from './pages/TestMapPage'
 
 function App() {
   
@@ -15,7 +15,10 @@ function App() {
     {
       path: '/',
       element: <Home />,
-    },
+    }, {
+      path: '/test',
+      element: <TestMapPage />,
+    }
   ])
 
   return (

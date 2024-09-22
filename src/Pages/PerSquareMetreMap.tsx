@@ -13,7 +13,7 @@ function PerSquareMetreMap() {
     const popup = useRef<mapboxgl.Popup | null>(null);
     const [minPrice, setMinPrice] = useState<number>(0);
     const [maxPrice, setMaxPrice] = useState<number>(100000);
-    const [opacity, setOpacity] = useState<number>(1);
+    const [opacity, setOpacity] = useState<number>(0.6);
     const [showSliders, setShowSliders] = useState<boolean>(true);
 
     function initialiseMap() {
@@ -33,7 +33,8 @@ function PerSquareMetreMap() {
             map.current.addControl(
                 new mapboxgl.AttributionControl({
                     customAttribution: ['Data from <a href="https://landregistry.data.gov.uk/app/ppd/">HM Land Registry</a> & <a href="https://epc.opendatacommunities.org/">EPC open data</a>',
-                        '<a href="https://doi.org/10.14324/111.444/ucloe.000019">Analysis by UCL Centre for Advanced Spatial Analysis</a>'
+                        '<a href="https://doi.org/10.14324/111.444/ucloe.000019">Analysis by UCL Centre for Advanced Spatial Analysis</a>',
+                        '<a href="https://x.com/freddie_poser">Map by Freddie Poser</a>'
                     ]
                 }),
                 'bottom-right'
@@ -43,6 +44,7 @@ function PerSquareMetreMap() {
             
             map.current.on('style.load', () => {
                 setPsqmFilter(minPrice, maxPrice);
+                updateOpacity(opacity);
             });
 
         }
@@ -59,7 +61,6 @@ function PerSquareMetreMap() {
     function onClick(event: mapboxgl.MapMouseEvent) {
         
         if (!map.current) return;
-        console.log(event.lngLat.lng, event.lngLat.lat)
         const features = map.current.queryRenderedFeatures(event.point)
         if (features.length > 0) {
             const feature = features[0];
@@ -88,7 +89,7 @@ function PerSquareMetreMap() {
         }
     }
 
-    useEffect(() => {
+    function updateOpacity(opacity: number) {
         if (map.current && map.current.isStyleLoaded()) {
             console.log(map.current.getPaintProperty('msoa', 'fill-opacity'))
             map.current.setPaintProperty('msoa', 'fill-opacity', opacity);
@@ -101,12 +102,19 @@ function PerSquareMetreMap() {
                 8.5,
                 0
             ]);
+        } else {
+            setTimeout(() => updateOpacity(opacity), 100);
         }
+    }
+
+    useEffect(() => {
+        updateOpacity(opacity)
     }, [opacity])
 
     useEffect(() => {
         if (!mapContainer.current) setTimeout(initialiseMap, 100);
         else initialiseMap();
+        updateOpacity(opacity)
     }, []);
 
     useEffect(() => {
