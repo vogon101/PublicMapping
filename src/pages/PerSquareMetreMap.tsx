@@ -1,7 +1,7 @@
 import mapboxgl, { FilterSpecification } from "mapbox-gl";
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useEffect, useRef, useState } from "react";
-import logoImage from '../assets/logo_colour_tight.png'; // Add this import
+import logoImage from '../assets/logo_colour_tight.png';
 
 const mapbox_token = import.meta.env.VITE_APP_MAPBOX_TOKEN
 mapboxgl.accessToken = mapbox_token
@@ -92,7 +92,15 @@ function PerSquareMetreMap() {
     function updateOpacity(opacity: number) {
         if (map.current && map.current.isStyleLoaded()) {
             console.log(map.current.getPaintProperty('msoa', 'fill-opacity'))
-            map.current.setPaintProperty('msoa', 'fill-opacity', opacity);
+            map.current.setPaintProperty('msoa', 'fill-opacity', [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                8,
+                0,
+                8.5,
+                opacity
+            ]);
             map.current.setPaintProperty('lad', 'fill-opacity', [
                 "interpolate",
                 ["linear"],
