@@ -3,7 +3,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { useEffect, useRef, useState } from "react";
 import logoImage from '../assets/logo_colour_tight.png'; // Add this import
 
-const mapbox_token = "pk.eyJ1IjoiZnJlZGRpZS15aW1ieSIsImEiOiJjbHBjdHJrdTAwcno2MnFrN3NvZjFoanZoIn0.a9zXaiHigQQBu1cgBKPxmg"
+const mapbox_token = import.meta.env.VITE_APP_MAPBOX_TOKEN
 mapboxgl.accessToken = mapbox_token
 
 function PerSquareMetreMap() {
