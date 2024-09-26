@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { mapEffect } from "../components/MapPage";
 import mapboxgl from "mapbox-gl";
 import SplitMapPage from "../components/SplitMapPage";
+import logoImage from "../assets/logo_colour_tight.png";
 
 export default function GreenBeltElectionMap() {
 
@@ -105,6 +106,7 @@ export default function GreenBeltElectionMap() {
                 }
             }}
         >
+            <img src={logoImage} alt="Logo" className="map-logo" />
             <div className="map-control">
                 <div className="slider-row">
                     <label>{splitMode ? "Left" : ""} Election</label>
@@ -128,6 +130,7 @@ export default function GreenBeltElectionMap() {
                 )}
                 <button onClick={() => setSplitMode(!splitMode)}>Switch to {splitMode ? "Single" : "Split"} Map</button>
             </div>
+
 
         </SplitMapPage> 
     </>
