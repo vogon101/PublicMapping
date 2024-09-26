@@ -99,7 +99,10 @@ export default function GreenBeltElectionMap() {
             rightMap={{
                 styleUrl: "mapbox://styles/freddie-yimby/cm1j6efpa00ks01qp3wfrf6in/draft",
                 map: rightMap,
-                onClick: (e) => onClick(rightMap.current!, e)
+                onClick: (e) => onClick(rightMap.current!, e),
+                mapOpts: {
+                    minZoom: 5,
+                }
             }}
         >
             <div className="map-control">
