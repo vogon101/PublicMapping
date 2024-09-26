@@ -8,6 +8,9 @@ function Home() {
                 <li>
                     <Link to="/psqm">2023 house prices per square metre</Link>
                 </li>
+                <li>
+                    <Link to="/green-belt-election">Who represents the Green Belt?</Link>
+                </li>
             </ul>
         </div>
     )

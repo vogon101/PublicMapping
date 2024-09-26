@@ -17,7 +17,7 @@ export interface MapPageProps {
     attributionControl?: mapboxgl.AttributionControl,
     onClick?: (event: mapboxgl.MapMouseEvent) => void,
     onLoad?: () => void,
-    children: ReactNode
+    children?: ReactNode
 }
 
 export default function MapPage ({styleUrl, map, mapOpts, attributionControl, onClick, onLoad, children} : MapPageProps) {

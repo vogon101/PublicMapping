@@ -1,14 +1,14 @@
-import mapboxgl, { FilterSpecification } from "mapbox-gl";
+import mapboxgl, { FilterSpecification, Map } from "mapbox-gl";
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useEffect, useRef, useState } from "react";
 import logoImage from '../assets/logo_colour_tight.png';
+import MapPage, { mapEffect } from '../components/MapPage';
 
 const mapbox_token = import.meta.env.VITE_APP_MAPBOX_TOKEN
 mapboxgl.accessToken = mapbox_token
 
 function PerSquareMetreMap() {
 
-    const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<mapboxgl.Map | null>(null);
     const popup = useRef<mapboxgl.Popup | null>(null);
     const [minPrice, setMinPrice] = useState<number>(0);
@@ -16,50 +16,14 @@ function PerSquareMetreMap() {
     const [opacity, setOpacity] = useState<number>(0.6);
     const [showSliders, setShowSliders] = useState<boolean>(true);
 
-    function initialiseMap() {
-        if (map.current) return;
-        if (mapContainer.current) {
-            map.current = new mapboxgl.Map({
-                container: mapContainer.current,
-                style: 'mapbox://styles/freddie-yimby/cm0z7za9j018701qob8g47v5b',
-                center: [-0.1276, 51.5074],
-                zoom: 10,
-                maxZoom: 14,
-                minZoom: 6,
-                attributionControl: false  // Disable default attribution control
-            });
-
-            // Add custom attribution
-            map.current.addControl(
-                new mapboxgl.AttributionControl({
-                    customAttribution: ['Data from <a href="https://landregistry.data.gov.uk/app/ppd/">HM Land Registry</a> & <a href="https://epc.opendatacommunities.org/">EPC open data</a>',
-                        '<a href="https://doi.org/10.14324/111.444/ucloe.000019">Analysis by UCL Centre for Advanced Spatial Analysis</a>',
-                        '<a href="https://x.com/freddie_poser">Map by Freddie Poser</a>'
-                    ]
-                }),
-                'bottom-right'
-            );
-
-            map.current.on('click', onClick);
-            
-            map.current.on('style.load', () => {
-                setPsqmFilter(minPrice, maxPrice);
-                updateOpacity(opacity);
-            });
-
-        }
-    }
-
-    function setPsqmFilter(minPrice: number, maxPrice: number) {
-        if (!map.current) return;
+    function setPsqmFilter(map: Map) {
         console.log(minPrice, maxPrice)
         const filter = ["all", [">=",["get", "priceper_median"], minPrice], ["<=", ["get", "priceper_median"], maxPrice]] as FilterSpecification
-        map.current.setFilter('msoa', filter)
-        map.current.setFilter('lad', filter)
+        map.setFilter('msoa', filter)
+        map.setFilter('lad', filter)
     }
 
     function onClick(event: mapboxgl.MapMouseEvent) {
-        
         if (!map.current) return;
         const features = map.current.queryRenderedFeatures(event.point)
         if (features.length > 0) {
@@ -84,61 +48,57 @@ function PerSquareMetreMap() {
                 closeButton: true,
                 closeOnClick: true,
             }).setLngLat(event.lngLat).setHTML(html).addTo(map.current);
-
-            // setPsqmFilter(feature.properties?.priceper_median, feature.properties?.priceper_mean)
         }
     }
 
-    function updateOpacity(opacity: number) {
-        if (map.current && map.current.isStyleLoaded()) {
-            console.log(map.current.getPaintProperty('msoa', 'fill-opacity'))
-            map.current.setPaintProperty('msoa', 'fill-opacity', [
-                "interpolate",
-                ["linear"],
-                ["zoom"],
-                8,
-                0,
-                8.5,
-                opacity
-            ]);
-            map.current.setPaintProperty('lad', 'fill-opacity', [
-                "interpolate",
-                ["linear"],
-                ["zoom"],
-                8,
-                opacity,
-                8.5,
-                0
-            ]);
-        } else {
-            setTimeout(() => updateOpacity(opacity), 100);
-        }
+    function updateOpacity(map: Map) {
+        console.log(map.getPaintProperty('msoa', 'fill-opacity'))
+        map.setPaintProperty('msoa', 'fill-opacity', [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            8, 0,
+            8.5,opacity
+        ]);
+        map.setPaintProperty('lad', 'fill-opacity', [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            8, opacity,
+            8.5, 0
+        ]);
     }
 
-    useEffect(() => {
-        updateOpacity(opacity)
-    }, [opacity])
-
-    useEffect(() => {
-        if (!mapContainer.current) setTimeout(initialiseMap, 100);
-        else initialiseMap();
-        updateOpacity(opacity)
-    }, []);
-
-    useEffect(() => {
-        if (map.current && map.current.isStyleLoaded()) {
-            setPsqmFilter(minPrice, maxPrice)
-        }
-    }, [minPrice, maxPrice])
+    useEffect(mapEffect(map, setPsqmFilter), [minPrice, maxPrice]);
+    useEffect(mapEffect(map, updateOpacity), [opacity]);
 
     return (
-        <div className="map-container">
-            <div
-            ref={mapContainer}
-            className="mapbox-map"
-            />
+        <MapPage
+            styleUrl='mapbox://styles/freddie-yimby/cm0z7za9j018701qob8g47v5b'
+            map={map}
+            mapOpts={{
+                center: [-0.1276, 51.5074],
+                zoom: 10,
+                maxZoom: 14,
+                minZoom: 6
+            }}
+            attributionControl={
+                new mapboxgl.AttributionControl({
+                    customAttribution: [
+                        'Data from <a href="https://landregistry.data.gov.uk/app/ppd/">HM Land Registry</a> & <a href="https://epc.opendatacommunities.org/">EPC open data</a>',
+                        '<a href="https://doi.org/10.14324/111.444/ucloe.000019">Analysis by UCL Centre for Advanced Spatial Analysis</a>',
+                        '<a href="https://x.com/freddie_poser">Map by Freddie Poser</a>'
+                    ]
+                })
+            }
+            onClick={onClick}
+            onLoad={() => {
+                setPsqmFilter(map.current!);
+                updateOpacity(map.current!);
+            }}
+        >
             <img src={logoImage} alt="Logo" className="map-logo" />
-            <div className="price-slider">
+            <div className="map-control">
                 <div className="price-slider-header">
                     <h3>Controls</h3>
                     <button className="toggle-button" onClick={() => setShowSliders(!showSliders)}>
@@ -146,10 +106,10 @@ function PerSquareMetreMap() {
                     </button>
                 </div>
                 <div className={`slider-row ${showSliders ? 'visible' : 'hidden'}`}>
-                <label>
-                    <b>Min Price:</b><br/>£{minPrice}
-                </label>
-                <input type="range" min="0" max="10000" step="500" value={minPrice} onChange={(e) => {
+                    <label>
+                        <b>Min Price:</b><br/>£{minPrice}
+                    </label>
+                    <input type="range" min="0" max="10000" step="500" value={minPrice} onChange={(e) => {
                         const newMinPrice = Number(e.target.value);
                         setMinPrice(newMinPrice);
                         if (newMinPrice > maxPrice) {
@@ -158,11 +118,10 @@ function PerSquareMetreMap() {
                     }} />
                 </div>
                 <div className={`slider-row ${showSliders ? 'visible' : 'hidden'}`}>
-                <label>
-                    <b>Max Price:</b><br/>£{maxPrice}
-                    
-                </label>
-                <input type="range" min="0" max="30000" step="500" value={maxPrice} onChange={(e) => {
+                    <label>
+                        <b>Max Price:</b><br/>£{maxPrice}
+                    </label>
+                    <input type="range" min="0" max="30000" step="500" value={maxPrice} onChange={(e) => {
                         const newMaxPrice = Number(e.target.value);
                         setMaxPrice(newMaxPrice);
                         if (newMaxPrice < minPrice) {
@@ -179,7 +138,7 @@ function PerSquareMetreMap() {
                     }} />
                 </div>
             </div>
-        </div>
+        </MapPage>
     )
 }
 
