@@ -7,12 +7,15 @@ interface SplitMapPageProps {
     rightMap: MapPageProps
     children?: React.ReactNode
     showRight?: boolean
+    showAnimate?: boolean
 }
 
-export default function SplitMapPage({leftMap, rightMap, children, showRight = true }: SplitMapPageProps) {
+export default function SplitMapPage({leftMap, rightMap, children, showRight = true, showAnimate = false }: SplitMapPageProps) {
 
     const [border, setBorder] = useState(0)
     const [isDragging, setIsDragging] = useState(false)
+    const [isAnimating, setIsAnimating] = useState(false);
+    const animationRef = useRef<number | null>(null);
 
     const overlayRef = useRef<HTMLDivElement>(null)
 
@@ -69,6 +72,39 @@ export default function SplitMapPage({leftMap, rightMap, children, showRight = t
         }
     }, [leftMap.map.current, rightMap.map.current])
 
+    const animate = () => {
+        if (isAnimating) return;
+        setIsAnimating(true);
+
+        const startTime = Date.now();
+        const duration = 10000; // 10 seconds
+        const startBorder = border;
+        const endBorder = window.innerWidth - 30; // End at the right edge, minus 30px buffer
+
+        const animateFrame = () => {
+            const elapsedTime = Date.now() - startTime;
+            const progress = Math.min(elapsedTime / duration, 1);
+            const newBorder = startBorder + (endBorder - startBorder) * progress;
+
+            setBorder(newBorder);
+
+            if (progress < 1) {
+                animationRef.current = requestAnimationFrame(animateFrame);
+            } else {
+                setIsAnimating(false);
+            }
+        };
+
+        animationRef.current = requestAnimationFrame(animateFrame);
+    };
+
+    useEffect(() => {
+        return () => {
+            if (animationRef.current) {
+                cancelAnimationFrame(animationRef.current);
+            }
+        };
+    }, []);
 
     return (
         <div 
@@ -93,6 +129,14 @@ export default function SplitMapPage({leftMap, rightMap, children, showRight = t
                 />
             )}
             {children}
+            {showAnimate && (
+                <div className="map-control" style={{transform: `translateY(200px)`}} >
+                    <button onClick={animate} disabled={isAnimating || !showRight}>
+                        {isAnimating ? "Animating..." : "Animate"}
+                    </button>
+                </div>
+            )}
+
         </div>
     )
 

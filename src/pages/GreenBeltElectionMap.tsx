@@ -3,6 +3,38 @@ import { mapEffect } from "../components/MapPage";
 import mapboxgl from "mapbox-gl";
 import SplitMapPage from "../components/SplitMapPage";
 import logoImage from "../assets/logo_colour_tight.png";
+import { Bar, BarChart, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+
+const data = [
+    {
+      name: '2024',
+      Lab: 49.728440,
+      Con: 33.166913,
+      LD: 15.536331,
+      Other: 1.568254,
+    },
+    {
+      name: '2019',
+      Lab: 15.172824,
+      Con: 83.227097,
+      LD: 0.988545,
+      Other: 0.611535,
+    },
+    {
+      name: '2017',
+      Lab: 23.697468,
+      Con: 75.338614,
+      LD: 0.726880,
+      Other: 0.237038,
+    },
+    {
+      name: '2015',
+      Lab: 20.760507,
+      Con: 78.403618,
+      LD: 0.598837,
+      Other: 0.237038,
+    },
+].reverse();
 
 export default function GreenBeltElectionMap() {
 
@@ -11,11 +43,13 @@ export default function GreenBeltElectionMap() {
 
     const popup = useRef<mapboxgl.Popup | null>(null);
 
-    const [splitMode, setSplitMode] = useState(true);
+    
 
     type Election = "2015" | "2017" | "2019" | "2024";
     const [electionLeft, setElectionLeft] = useState<Election>("2019");
     const [electionRight, setElectionRight] = useState<Election>("2024");
+    const [showBarChart, setShowBarChart] = useState(true);
+    const [splitMode, setSplitMode] = useState(true);
 
     function updateElection(map: mapboxgl.Map, election: Election) {
         const layer = `constituencies-${election}`
@@ -59,7 +93,8 @@ export default function GreenBeltElectionMap() {
             console.log(feature)
             const html = `
                 <div>
-                    <h3>${election == "2024" ? feature.properties?.PCON24NM : feature.properties?.Name}</h3>
+                    <h2>${election == "2024" ? feature.properties?.PCON24NM : feature.properties?.Name}</h2>
+                    <h3>${election}</h3>
                     <p>
                         Winner: ${feature.properties?.[`Winner ${election}`]}
                     </p>
@@ -108,6 +143,7 @@ export default function GreenBeltElectionMap() {
         >
             <img src={logoImage} alt="Logo" className="map-logo" />
             <div className="map-control">
+                <h3>Who represents the Green Belt?</h3>
                 <div className="slider-row">
                     <label>{splitMode ? "Left" : ""} Election</label>
                     <select onChange={(e) => setElectionLeft(e.target.value as Election)} value={electionLeft}>
@@ -129,6 +165,22 @@ export default function GreenBeltElectionMap() {
                     </div>
                 )}
                 <button onClick={() => setSplitMode(!splitMode)}>Switch to {splitMode ? "Single" : "Split"} Map</button>
+                <button onClick={() => setShowBarChart(!showBarChart)}>{showBarChart ? "Hide" : "Show"} Bar Chart</button>
+
+                <div className={`bar-chart-container ${showBarChart ? "visible" : "hidden"}`}>
+                    <ResponsiveContainer width="100%" height={window.innerHeight * 0.3}>
+                        <BarChart data={data} >
+                            <XAxis dataKey="name"/>
+                            <YAxis domain={[0, 100]} tickFormatter={(value) => `${value.toFixed(0)}%`} ticks={[0, 25, 50, 75, 100]} label={{ value: '% of Green Belt', angle: -90, position:'insideLeft' }}/>
+                            <Tooltip formatter={(value) => `${(value as number).toFixed(0)}%`} />
+                            <Legend />
+                            <Bar dataKey="Lab" stackId="a" fill="#dc241f" name="Labour" />
+                            <Bar dataKey="Con" stackId="a" fill="#0087dc" name="Conservative" />
+                            <Bar dataKey="LD" stackId="a" fill="#fdbb30" name="Liberal Democrat" />
+                            <Bar dataKey="Other" stackId="a" fill="#808080" name="Other" />                            
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
             </div>
 
 
