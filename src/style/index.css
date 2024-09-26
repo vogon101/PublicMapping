@@ -34,7 +34,7 @@ body, #root {
   border-radius: 5px;
   padding: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 400px;
+  width: 300px;
 }
 
 .slider-row {
@@ -61,6 +61,12 @@ body, #root {
   .price-slider {
     width: calc(100% - 40px);
     border-radius: 0;
+  }
+
+  .map-control {
+    width: calc(100% - 20px);
+    left: 5px;
+    padding: 5px;
   }
 }
 
@@ -143,6 +149,7 @@ body, #root {
   background-color: rgba(255, 255, 255, 0.5);
   cursor: col-resize;
   z-index: 1000;
+  touch-action: none;
 }
 
 .split-map-overlay::before {
@@ -160,8 +167,15 @@ body, #root {
 .split-map-overlay {
   position: absolute;
   top: 0;
-  left: -5px;
-  width: 10px;
+  left: -10px;
+  width: 20px;
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 768px) {
+  .split-map-overlay {
+    left: -12px;
+    width: 24px;
+  }
 }

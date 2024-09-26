@@ -23,17 +23,19 @@ export default function SplitMapPage({leftMap, rightMap, children, showRight = t
         syncMaps(leftMap.map.current, rightMap.map.current)
 
     }
-    function startDragging(_: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
+    function startDragging(event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
+        event.preventDefault(); // Prevent default touch behavior
         setIsDragging(true)
     }
 
     function onDrag(event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
         if (!isDragging) return
         
+        event.preventDefault(); // Prevent default touch behavior
         const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX
         const rect = event.currentTarget.getBoundingClientRect()
         const x = clientX - rect.left
-        setBorder(Math.max(0, Math.min(x, rect.width)))
+        setBorder(Math.max(30, Math.min(x, rect.width - 30)))
     }
 
     useEffect(() => {
@@ -73,6 +75,7 @@ export default function SplitMapPage({leftMap, rightMap, children, showRight = t
             className="split-map-page" 
             onMouseMove={onDrag}
             onTouchMove={onDrag}
+            onTouchStart={(e) => e.preventDefault()}
         >
             <div className="split-map-left" style={{clipPath: showRight ? `rect(0 ${border}px 100vh 0)` : 'rect(0 100vw 100vh 0)', transform: `translateZ(0)`}}>
                 <MapPage {...leftMap} />
