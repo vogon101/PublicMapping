@@ -4,6 +4,7 @@ import PerSquareMetreMap from './pages/PerSquareMetreMap'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import TestMapPage from './pages/TestMapPage'
 import GreenBeltElectionMap from './pages/GreenBeltElectionMap'
+import StationConstituencies from './pages/StationConstituencies/StationConstituencies'
 
 function App() {
   
@@ -23,6 +24,10 @@ function App() {
     {
       path: '/green-belt-election',
       element: <GreenBeltElectionMap />,
+    },
+    {
+      path: '/station-constituencies',
+      element: <StationConstituencies />,
     }
   ])
 
