@@ -18,9 +18,11 @@ export interface MapPageProps {
     onClick?: (event: mapboxgl.MapMouseEvent) => void,
     onLoad?: () => void,
     children?: ReactNode
+    useContainer?: boolean
+    mapClassName?: string
 }
 
-export default function MapPage ({styleUrl, map, mapOpts, attributionControl, onClick, onLoad, children} : MapPageProps) {
+export default function MapPage ({styleUrl, map, mapOpts, attributionControl, onClick, onLoad, children, useContainer = true, mapClassName} : MapPageProps) {
 
     const mapContainer = useRef<HTMLDivElement>(null);
 
@@ -50,12 +52,15 @@ export default function MapPage ({styleUrl, map, mapOpts, attributionControl, on
 
     useEffect(initialiseMap, [])
 
-    return (
-        <div className="map-container">
-            <div className="mapbox-map" ref={mapContainer} />
-            {children}
-        </div>
-    )
+    return (<>
+        {useContainer ? 
+            <div className="map-container">
+                <div className="mapbox-map" ref={mapContainer} />
+                {children}
+            </div> : 
+            <div className={`${mapClassName ?? 'mapbox-map'}`} ref={mapContainer} />
+        }
+    </>)
 
 
 
