@@ -1,10 +1,10 @@
 import EmbededMap from "@/components/EmbededMap";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartStyle, ChartConfig } from "@/components/ui/chart";
+import { ChartContainer, ChartConfig } from "@/components/ui/chart";
 import { BarChart, XAxis, YAxis, Tooltip, Legend, Bar } from "recharts";
 import { StationConstituencyTable } from "./StationConstituencies/StationConstituencies";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import React from "react";
-import ReactMarkdown from 'react-markdown';
+// import ReactMarkdown from 'react-markdown';
 import { parse } from 'yaml';
 import Markdown from "react-markdown";
 
@@ -86,19 +86,20 @@ function EssayError({ children }: { children: React.ReactNode }) {
         {children}
     </div>
 }
-function EssayLink({ to, children, type = 'regular' }: { to: string, children: React.ReactNode, type: 'scroll' | 'regular'}) {
 
-    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-        if (type === 'scroll') {
-        e.preventDefault();
-            const target = document.querySelector(to);
-            if (target) {
-                target.scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-    };
-    return <a href={to} className="text-blue-500 hover:underline hover:text-gray-500" onClick={handleClick}>{children}</a>
-}
+// function EssayLink({ to, children, type = 'regular' }: { to: string, children: React.ReactNode, type: 'scroll' | 'regular'}) {
+
+//     const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+//         if (type === 'scroll') {
+//         e.preventDefault();
+//             const target = document.querySelector(to);
+//             if (target) {
+//                 target.scrollIntoView({ behavior: 'smooth' });
+//             }
+//         }
+//     };
+//     return <a href={to} className="text-blue-500 hover:underline hover:text-gray-500" onClick={handleClick}>{children}</a>
+// }
 
 const data = [
     {
@@ -170,9 +171,9 @@ function GBGraph() {
 export function YAMLEssay() {
     
     const [content, setContent] = useState<{ essay: any[]}>({ essay: [] })
-    const contentRef = useRef<HTMLDivElement>(null);
+    // const contentRef = useRef<HTMLDivElement>(null);
 
-    
+
     useEffect(() => {
         fetch('/essay.yaml')
             .then(res => res.text())
