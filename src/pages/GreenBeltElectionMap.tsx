@@ -125,7 +125,7 @@ export default function GreenBeltElectionMap() {
         <SplitMapPage
             showRight={splitMode}
             leftMap={{
-                styleUrl: "mapbox://styles/freddie-yimby/cm1j6efpa00ks01qp3wfrf6in/draft",
+                styleUrl: "mapbox://styles/freddie-yimby/cm1j6efpa00ks01qp3wfrf6in",
                 map: leftMap,
                 onClick: (e) => onClick(leftMap.current!, e),
                 mapOpts: {
@@ -133,7 +133,7 @@ export default function GreenBeltElectionMap() {
                 }
             }}
             rightMap={{
-                styleUrl: "mapbox://styles/freddie-yimby/cm1j6efpa00ks01qp3wfrf6in/draft",
+                styleUrl: "mapbox://styles/freddie-yimby/cm1j6efpa00ks01qp3wfrf6in",
                 map: rightMap,
                 onClick: (e) => onClick(rightMap.current!, e),
                 mapOpts: {

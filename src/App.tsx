@@ -5,7 +5,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import TestMapPage from './pages/TestMapPage'
 import GreenBeltElectionMap from './pages/GreenBeltElectionMap'
 import StationConstituenciesPage from './pages/StationConstituencies/StationConstituencies'
-import Essay from './pages/Essay'
+import Essay, { YAMLEssay } from './pages/Essay'
 
 function App() {
   
@@ -32,7 +32,7 @@ function App() {
     },
     {
       path: '/essay',
-      element: <Essay />,
+      element: <YAMLEssay />,
     }
   ])
 

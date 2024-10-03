@@ -8,6 +8,7 @@ import {
   getSortedRowModel,
   SortingState,
   ColumnFiltersState,
+  FilterFnOption,
 } from "@tanstack/react-table"
 
 import {
@@ -44,13 +45,17 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
-    globalFilterFn: (row, filterValue) => {
-      const searchableColumns = ["PCON24NM", "mpFullName", "winningParty"]
-      return searchableColumns.some((column) => {
-        const value = row.getValue(column) as string
-        return value?.toLowerCase().includes(filterValue.toLowerCase())
-      })
+    filterFns: {
+      custom: (row, _, filterValue) => {
+        const searchableColumns = ["PCON24NM", "mpFullName", "winningParty"]
+        return searchableColumns.some((column) => {
+          const value = row.getValue(column) as string
+          return value?.toLowerCase().includes(filterValue.toLowerCase())
+        })
+      }
     },
+    globalFilterFn: "custom" as FilterFnOption<TData>,
+    onGlobalFilterChange: setGlobalFilter,
     state: {
       sorting,
       columnFilters,

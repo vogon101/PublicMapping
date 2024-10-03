@@ -1,49 +1,60 @@
 import EmbededMap from "@/components/EmbededMap";
-import { ResponsiveContainer } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartStyle, ChartConfig } from "@/components/ui/chart";
 import { BarChart, XAxis, YAxis, Tooltip, Legend, Bar } from "recharts";
 import { StationConstituencyTable } from "./StationConstituencies/StationConstituencies";
+import { useEffect, useRef, useState } from "react";
+import React from "react";
+import ReactMarkdown from 'react-markdown';
+import { parse } from 'yaml';
+import Markdown from "react-markdown";
 
 function Paragraph({ children }: { children: React.ReactNode }) {
     return <p className="my-4 text-justify">{children}</p>
 }
 
-function PullQuote({ children, author }: { children: React.ReactNode, author: string }) {
+function EssayQuote({ children, author }: { children: React.ReactNode, author: string }) {
     return (
         <blockquote className="my-4 p-4 bg-gray-100 border-l-4 border-gray-300 pl-4 italic hover:border-gray-400 transition-all duration-300 hover:scale-105 relative flex flex-col">
-            <span className="text-6xl absolute top-0 left-0 text-gray-300">“</span>
+            <span className="text-6xl absolute top-0 left-0 text-gray-300">"</span>
             {children}
             <span className="text-sm text-gray-500 mt-4">– {author}</span>
         </blockquote>
     )
 }
 
-function ChartContainer({ figNum, chart, caption }: { figNum: number, chart: React.ReactNode, caption: string }) {
-    return <div className="my-4">
+function EssayChart({ figNum, caption, children, source }: { figNum: number, caption: string, children: React.ReactNode, source?: string }) {
+    return <div className="my-4" id={`chart-${figNum}`}>
         <p className="text-md italic text-gray-500 pb-4">Figure {figNum}: {caption}</p>
-        {chart}
+        {children}
+        {source && <p className="text-sm text-gray-500">{source}</p>}
     </div>
 }
 
-function ImageContainer({ figNum, src, caption }: { figNum: number, src: string, caption: string }) {
-    return <div className="my-4 hover:scale-105 transition-all duration-300" >
+function EssayImage({ figNum, src, caption, source }: { figNum: number, src: string, caption: string, source?: string }) {
+    return <div className="my-4 hover:scale-105 transition-all duration-300" id={`image-${figNum}`}>
         <p className="text-md italic text-gray-500 pb-4">Figure {figNum}: {caption}</p>
         <img src={src} alt={caption} />
+        {source && <p className="text-sm text-gray-500">{source}</p>}
     </div>
 }
 
-function MapContainer({ figNum, mapboxStyle, caption }: { figNum: number, mapboxStyle: string, caption: string }) {
-    return <div className="my-4 transition-all duration-300 w-full">
+function EssayMap({ figNum, mapboxStyle, caption, source }: { figNum: number, mapboxStyle: string, caption: string, source?: string }) {
+    return <div className="my-4 transition-all duration-300 w-full" id={`map-${figNum}`}>
         <p className="text-md italic text-gray-500 pb-4">Figure {figNum}: {caption}</p>
         <div className="h-[80vh] sm:h-[50vh]">
             <EmbededMap mapboxStyle={mapboxStyle} />
         </div>
+        {source && <p className="text-sm text-gray-500">{source}</p>}
     </div>
 }
 
-function TableContainer({ children, num, caption }: { children: React.ReactNode, num: number, caption: string }) {
-    return <div className="my-4 h-[80vh] sm:h-[50vh] overflow-hidden">
-        <p className="text-md italic text-gray-500 pb-4">Table {num}: {caption}</p>
-        {children}
+function EssayTable({ children, num, caption, source }: { children: React.ReactNode, num: number, caption: string, source?: string }) {
+    return <div className="my-4 h-[80vh] sm:h-[50vh]" id={`table-${num}`}>
+        <p className="text-md italic text-gray-500 pb-2">Table {num}: {caption}</p>
+        <div className="overflow-y-hidden h-[calc(100%-4rem)]">
+            {children}
+        </div>
+        {source && <p className="text-sm text-gray-500">{source}</p>}
     </div>
 }
 
@@ -56,6 +67,37 @@ function Footnote({ children, num }: { children: React.ReactNode, num: number })
             </div>
         </sup>
     )
+}
+
+function Heading({ children, name, level = 2 }: { children: React.ReactNode, name: string, level: number }) {
+
+    const headingStyle = level === 1 ? 'text-3xl text-primary font-bold mt-16' :
+                        level === 2 ? 'text-2xl text-primary font-bold mt-8' :
+                        level === 3 ? 'text-xl text-primary font-bold mt-8' :
+                        level === 4 ? 'text-lg text-gray-700 font-bold mt-4' :
+                        level === 5 ? 'text-md text-gray-700 mt-4' :
+                        level === 6 ? 'text-md text-gray-700 italic mt-4' : '';
+
+    return React.createElement(`h${level}`, { className: headingStyle, id: name }, children);
+}
+
+function EssayError({ children }: { children: React.ReactNode }) {
+    return <div className="my-4 p-4 bg-red-100 border-l-4 border-red-300 pl-4 italic">
+        {children}
+    </div>
+}
+function EssayLink({ to, children, type = 'regular' }: { to: string, children: React.ReactNode, type: 'scroll' | 'regular'}) {
+
+    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        if (type === 'scroll') {
+        e.preventDefault();
+            const target = document.querySelector(to);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    };
+    return <a href={to} className="text-blue-500 hover:underline hover:text-gray-500" onClick={handleClick}>{children}</a>
 }
 
 const data = [
@@ -90,51 +132,163 @@ const data = [
 ].reverse();
 
 function GBGraph() {
-    return <ResponsiveContainer width="100%" height={window.innerHeight * 0.3}>
+
+    const config = {
+        Lab: {
+            label: 'Labour',
+            color: '#dc241f',
+        },
+        Con: {
+            label: 'Conservative',
+            color: '#0087dc',
+        },
+        LD: {
+            label: 'Liberal Democrat',
+            color: '#fdbb30',
+        },
+        Other: {
+            label: 'Other',
+            color: '#808080',
+        },
+    } satisfies ChartConfig;
+
+    return <ChartContainer className="min-h-[75vh] sm:min-h-[40vh] w-full" config={config}>
         <BarChart data={data} >
-            <XAxis dataKey="name" />
+            <XAxis dataKey="label" />
             <YAxis domain={[0, 100]} tickFormatter={(value) => `${value.toFixed(0)}%`} ticks={[0, 25, 50, 75, 100]} label={{ value: '% of Green Belt', angle: -90, position: 'insideLeft' }} />
             <Tooltip formatter={(value) => `${(value as number).toFixed(0)}%`} />
             <Legend />
-            <Bar dataKey="Lab" stackId="a" fill="#dc241f" name="Labour" />
-            <Bar dataKey="Con" stackId="a" fill="#0087dc" name="Conservative" />
-            <Bar dataKey="LD" stackId="a" fill="#fdbb30" name="Liberal Democrat" />
-            <Bar dataKey="Other" stackId="a" fill="#808080" name="Other" />
+            <Bar dataKey="Lab" stackId="a" fill="var(--color-Lab)"/>
+            <Bar dataKey="Con" stackId="a" fill="var(--color-Con)"/>
+            <Bar dataKey="LD" stackId="a" fill="var(--color-LD)"/>
+            <Bar dataKey="Other" stackId="a" fill="var(--color-Other)" />
         </BarChart>
-    </ResponsiveContainer>
+    </ChartContainer>
 }
 
-export default function Essay() {
+
+export function YAMLEssay() {
+    
+    const [content, setContent] = useState<{ essay: any[]}>({ essay: [] })
+    const contentRef = useRef<HTMLDivElement>(null);
+
+    
+    useEffect(() => {
+        fetch('/essay.yaml')
+            .then(res => res.text())
+            .then(text => setContent(parse(text)))
+            .catch(err => console.error(err))
+    }, [])
+
+    // useEffect(() => {
+    //     const smoothScrollToHash = () => {
+    //         const hash = window.location.hash;
+    //         if (hash && contentRef.current) {
+    //             const targetElement = contentRef.current.querySelector(hash);
+    //             if (targetElement) {
+    //                 setTimeout(() => {
+    //                     targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    //                 }, 100);
+    //             }
+    //         }
+    //     };
+
+    //     smoothScrollToHash();
+    //     window.addEventListener('hashchange', smoothScrollToHash);
+
+    //     return () => {
+    //         window.removeEventListener('hashchange', smoothScrollToHash);
+    //     };
+    // }, []);
+
+    const availableComponents = {
+        GBGraph: GBGraph,
+        StationConstituencyTable: StationConstituencyTable,
+    }
+
+    const markdownComponents = {
+        p(props: any) {
+            return <span {...props} />
+        },
+        a(props: any) {
+            return <a {...props} className="text-blue-500 hover:underline"/>
+        }
+    }
+
+    function parseText(text: string): React.ReactNode {
+        const footnoteRegex = /\[\^F:([^\]]+)\]/g;
+        return text.split(footnoteRegex).map((part, index) => {
+            if (index % 2 === 0) {
+                return <Markdown components={markdownComponents}>{part}</Markdown>;
+            } else {
+                return <span key={index}><Footnote num={index}>{part}</Footnote> </span>;
+            }
+        });
+    }
+
+    const items: React.ReactNode[] = []
+    let figureCount = 0
+    let tableCount = 0
+
+
+    console.log(content.essay)
+    content.essay.forEach((item, index) => {
+        if (typeof item === 'string') {
+            items.push(<Paragraph key={index}>{parseText(item)}</Paragraph>)
+            return
+        }
+
+        const key = Object.keys(item)[0]
+        const value = item[key]
+
+        switch (key) {
+            case 'quote':
+                items.push(<EssayQuote key={index} author={value.author}>{parseText(value.text)}</EssayQuote>)
+                break
+            case 'chart':
+                if (availableComponents[value.component as keyof typeof availableComponents]) {
+                    figureCount++
+                    items.push(<EssayChart key={index} figNum={figureCount} caption={value.caption} source={value.source}>
+                        {React.createElement(availableComponents[value.component as keyof typeof availableComponents], {})}
+                    </EssayChart>)
+                } else{
+                    items.push(<EssayError key={index}>Component {value.component} not found</EssayError>)
+                }
+                break
+            case 'map':
+                figureCount++
+                items.push(<EssayMap key={index} figNum={figureCount} mapboxStyle={value.style} caption={value.caption} source={value.source} />)
+                break
+            case 'table':
+                if (availableComponents[value.component as keyof typeof availableComponents]) {
+                    tableCount++
+                    items.push(<EssayTable key={index} num={tableCount} caption={value.caption} source={value.source}>
+                        {React.createElement(availableComponents[value.component as keyof typeof availableComponents], {})}
+                    </EssayTable>)
+                } else{
+                    items.push(<EssayError key={index}>Component {value.component} not found</EssayError>)
+                }
+                break
+            case 'image':
+                figureCount++
+                items.push(<EssayImage key={index} figNum={figureCount} src={value.src} caption={value.caption} source={value.source} />)
+                break
+            case 'h2':
+            case 'h3':
+            case 'h4':
+            case 'h5':
+            case 'h6':
+                items.push(<Heading key={index} name={value.name} level={key.charCodeAt(1) - 48}>{parseText(value)}</Heading>)
+                break
+            default:
+                items.push(<EssayError key={index}>Component {key} not found</EssayError>)
+        }
+    })
 
     return (
         <div className="container mx-auto px-4 max-w-4xl py-16 border-b border-gray-200 mb-16 border-x-2 sm:px-16">
-            <div className="flex justify-center">
-                <div className="w-full">
-                    <div className="flex flex-col justify-center">
-                        <h1 className="text-3xl font-bold">Building homes huh?</h1>
-                        <p className="text-sm text-gray-500">By Freddie Poser</p>
-                    </div>
-                    <Paragraph>Lorem ipsum dolor sit amet<Footnote num={1}>This is a footnote</Footnote>, consectetur adipiscing elit. Phasellus rhoncus velit lectus, sed tincidunt lacus semper id. Donec fermentum est quis ligula facilisis laoreet. Fusce tortor risus, facilisis eget ultrices quis, porttitor id sapien. Integer malesuada ut urna sit amet laoreet. Maecenas sed porttitor leo, a lobortis turpis. Mauris iaculis euismod tortor, nec ultricies mi euismod sit amet. Donec porttitor ultrices urna. Sed et justo ac erat commodo tempus sed fermentum ante. Integer id mattis sapien. Sed a sapien vehicula eros tincidunt pharetra ac a mauris. Integer egestas ipsum purus, quis tincidunt libero luctus sit amet. Suspendisse ante quam, molestie at ligula quis, lobortis feugiat erat. Nulla bibendum lobortis sem. Proin aliquet, massa id tincidunt sollicitudin, dui nisi finibus velit, vel gravida nibh lectus sit amet justo.</Paragraph>
-
-                    <PullQuote author="Julius Caesar">Nunc hendrerit nunc sed eleifend iaculis. Phasellus consectetur mauris dui, sit amet luctus sem tempus in. Pellentesque luctus urna et ex dapibus ultrices. Nunc semper iaculis risus nec facilisis. Sed pellentesque nec nisl in fermentum. Nunc vitae condimentum ex. Suspendisse dapibus in enim non aliquet. Morbi non vulputate massa. Proin augue massa, consequat sit amet viverra sit amet, semper hendrerit elit. Donec ac arcu aliquet, volutpat leo vitae, laoreet neque. Quisque sit amet nisi rhoncus, feugiat libero blandit, semper libero. Sed eu dapibus mi, at laoreet leo.</PullQuote>
-
-                    <ChartContainer figNum={1} chart={<GBGraph />} caption="The percentage of Green Belt in each constituency, by election year" />
-
-                    <MapContainer figNum={2} mapboxStyle="mapbox://styles/freddie-yimby/cm1j6efpa00ks01qp3wfrf6in/draft" caption="Embeded maps!" />
-
-                    <ImageContainer figNum={3} src="/images/Pres.png" caption="Prediction market" />
-
-                    <h2 className="text-2xl font-bold mt-16">Conclusion</h2>
-
-                    <Paragraph>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus rhoncus velit lectus, sed tincidunt lacus semper id. Donec fermentum est quis ligula facilisis laoreet. Fusce tortor risus, facilisis eget ultrices quis, porttitor id sapien. Integer malesuada ut urna sit amet laoreet. Maecenas sed porttitor leo, a lobortis turpis. Mauris iaculis euismod tortor, nec ultricies mi euismod sit amet. Donec porttitor ultrices urna. Sed et justo ac erat commodo tempus sed fermentum ante. Integer id mattis sapien. Sed a sapien vehicula eros tincidunt pharetra ac a mauris. Integer egestas ipsum purus, quis tincidunt libero luctus sit amet. Suspendisse ante quam, molestie at ligula quis, lobortis feugiat erat. Nulla bibendum lobortis sem. Proin aliquet, massa id tincidunt sollicitudin, dui nisi finibus velit, vel gravida nibh lectus sit amet justo.</Paragraph>
-
-                    <TableContainer num={1} caption="The percentage of Green Belt in each constituency, by election year">
-                        <StationConstituencyTable />
-                    </TableContainer>
-
-                </div>
-            </div>
+            {items}
         </div>
-    )
-
+    );
 }
+

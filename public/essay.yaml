@@ -1,0 +1,38 @@
+essay:
+    - "Lorem ipsum dolor sit amet,[^F:This is a footnote] consectetur adipiscing elit. Phasellus rhoncus velit lectus, sed tincidunt lacus semper id. Donec fermentum est quis ligula facilisis laoreet. Fusce tortor risus, facilisis eget ultrices quis, porttitor id sapien. Integer malesuada ut urna sit amet laoreet. Maecenas sed porttitor leo, a lobortis turpis. Mauris iaculis euismod tortor, nec ultricies mi euismod sit amet. Donec porttitor ultrices [google.com](https://www.google.com) urna. Sed et justo ac erat commodo tempus sed fermentum ante. Integer id mattis sapien. Sed a sapien vehicula eros tincidunt pharetra ac a mauris. Integer egestas ipsum purus, quis tincidunt libero luctus sit amet. Suspendisse ante quam, molestie at ligula quis, [lobortis](#table-1) feugiat erat. Nulla bibendum lobortis sem. Proin aliquet, massa id tincidunt sollicitudin, dui nisi finibus velit, vel gravida nibh lectus sit amet justo."
+
+    - quote:
+        author: Julius Caesar
+        text: Nunc hendrerit nunc sed eleifend iaculis. Phasellus consectetur mauris dui, sit amet luctus sem tempus in. Pellentesque luctus urna et ex dapibus ultrices. Nunc semper iaculis risus nec facilisis. Sed pellentesque nec nisl in fermentum. Nunc vitae condimentum ex. Suspendisse dapibus in enim non aliquet. Morbi non vulputate massa. Proin augue massa, consequat sit amet viverra sit amet, semper hendrerit elit. Donec ac arcu aliquet, volutpat leo vitae, laoreet nunc.
+    
+    - chart:
+        caption: The percentage of Green Belt in each constituency, by election year
+        component: GBGraph
+    
+    - map:
+        caption: Embeded maps!
+        style: mapbox://styles/freddie-yimby/cm1j6efpa00ks01qp3wfrf6in
+
+    - table:
+        caption: The percentage of Green Belt in each constituency, by election year
+        component: StationConstituencyTable
+        source: "Source: Parliament"
+    - image:
+        caption: Prediction market
+        src: /images/Pres.png
+        source: "Source: Metaculus"
+
+    - h2: Conclusion
+    - h3: Conclusion
+    - h4: Conclusion
+    - h5: Conclusion
+    - h6: Conclusion
+
+    - Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus rhoncus velit lectus, sed tincidunt lacus semper id. Donec fermentum est quis ligula facilisis laoreet. Fusce tortor risus, facilisis eget ultrices quis, porttitor id sapien. Integer malesuada ut urna sit amet laoreet. Maecenas sed porttitor leo, a lobortis turpis. Mauris iaculis euismod tortor, nec ultricies mi euismod sit amet. Donec porttitor ultrices urna. Sed et justo ac erat commodo tempus sed fermentum a...
+
+    - table:
+        caption: The percentage of Green Belt in each constituency, by election year
+        component: StationConstituencyTable
+
+    - h2: Conclusion
+
