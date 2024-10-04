@@ -57,7 +57,7 @@ body, #root {
   border-radius: 5px;
   padding: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 300px;
+  max-width:300px;
 }
 
 .slider-row {
@@ -65,14 +65,15 @@ body, #root {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
-  max-height: 50px;
+  /* max-height: 50px; */
   overflow: hidden;
   transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
   opacity: 1;
 }
 
 .slider-row label {
-  flex: 0 0 100px;
+  max-width: 40%;
+  flex: 1 0 100px;
   margin-right: 10px;
 }
 

@@ -6,6 +6,7 @@ import TestMapPage from './pages/TestMapPage'
 import GreenBeltElectionMap from './pages/GreenBeltElectionMap'
 import StationConstituenciesPage from './pages/StationConstituencies/StationConstituencies'
 import { YAMLEssay } from './pages/Essay'
+import GBStationsMap from './pages/GBStationsMap'
 
 function App() {
   
@@ -33,6 +34,10 @@ function App() {
     {
       path: '/essay',
       element: <YAMLEssay />,
+    },
+    {
+      path: '/gb-stations',
+      element: <GBStationsMap />,
     }
   ])
 
