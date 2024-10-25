@@ -13,6 +13,8 @@ export default function GBStationsMap() {
     const [showConstituencies, setShowConstituencies] = useState(true)
     const [minPopulationDensity, setMinPopulationDensity] = useState(40)
     const [maxPopulationDensity, setMaxPopulationDensity] = useState(16000)
+    const [minPricePerSqm, setMinPricePerSqm] = useState(0)
+    const [maxPricePerSqm, setMaxPricePerSqm] = useState(30000)
 
     const distances = [250, 500, 750, 1000]
     const layer_pattern = 'stn-'
@@ -59,8 +61,23 @@ export default function GBStationsMap() {
         }
     }
 
+    function setPricePerSqmFilter(map: mapboxgl.Map) {
+        console.log(minPricePerSqm, maxPricePerSqm)
+        const filter = ["all",
+            [">=", ["get", "population_density"], minPopulationDensity],
+            ["<=", ["get", "population_density"], maxPopulationDensity],
+            [">=", ["get", "priceper_median"], minPricePerSqm],
+            ["<=", ["get", "priceper_median"], maxPricePerSqm]
+        ] as FilterSpecification
+        distances.forEach(distance => {
+            map.setFilter(`${layer_pattern}${distance}`, filter)
+        })
+        map.setFilter(`${layer_pattern}1000-line`, filter)
+    }
+
     useEffect(mapEffect(map, setPopulationDensityFilter), [minPopulationDensity, maxPopulationDensity])
     useEffect(mapEffect(map, toggleConstituencies), [showConstituencies])
+    useEffect(mapEffect(map, setPricePerSqmFilter), [minPopulationDensity, maxPopulationDensity, minPricePerSqm, maxPricePerSqm])
 
     return <MapPage
         styleUrl='mapbox://styles/freddie-yimby/cm1upjcn3013r01qvhvhqdl1i'
@@ -114,7 +131,44 @@ export default function GBStationsMap() {
                 </label>
                 <input type="checkbox" checked={showConstituencies} onChange={() => setShowConstituencies(!showConstituencies)} />
             </div>
-
+            <div className={`slider-row ${showSliders ? 'visible' : 'hidden'}`}>
+                <label>
+                    <b>Min price per sqm: £{minPricePerSqm.toFixed(0)}</b>
+                </label>
+                <input
+                    type="range"
+                    min="0"
+                    max="10000"
+                    step="100"
+                    value={minPricePerSqm}
+                    onChange={(e) => {
+                        const newMinPrice = Number(e.target.value);
+                        setMinPricePerSqm(newMinPrice);
+                        if (newMinPrice > maxPricePerSqm) {
+                            setMaxPricePerSqm(newMinPrice * 1.1);
+                        }
+                    }}
+                />
+            </div>
+            <div className={`slider-row ${showSliders ? 'visible' : 'hidden'}`}>
+                <label>
+                    <b>Max price per sqm: £{maxPricePerSqm.toFixed(0)}</b>
+                </label>
+                <input
+                    type="range"
+                    min="0"
+                    max="30000"
+                    step="100"
+                    value={maxPricePerSqm}
+                    onChange={(e) => {
+                        const newMaxPrice = Number(e.target.value);
+                        setMaxPricePerSqm(newMaxPrice);
+                        if (newMaxPrice < minPricePerSqm) {
+                            setMinPricePerSqm(newMaxPrice * 0.9);
+                        }
+                    }}
+                />
+            </div>
         </div>
     </MapPage>
 }
