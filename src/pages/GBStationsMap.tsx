@@ -39,25 +39,46 @@ export default function GBStationsMap() {
     function onClick(event: mapboxgl.MapMouseEvent) {
         if (!map.current) return;
         const features = map.current.queryRenderedFeatures(event.point)
-        if (features.length > 0 && features[0].layer?.id.startsWith(layer_pattern)) {
-            const feature = features[0];
-            console.log(feature)
-            console.log(feature.properties)
-            const html = `
-                <div>
-                    <h2>${feature.properties?.MSOA21NM ? feature.properties?.MSOA21NM : feature.properties?.LAD22NM}</h2>
-                    <p>
-                        Median price per sqm: £${feature.properties?.priceper_median.toFixed(2)}
-                    </p>
-                    <p>
-                        Population density: ${feature.properties?.population_density.toFixed(2)}
-                    </p>
-                </div>
-            `
-            popup.current = new mapboxgl.Popup({
-                closeButton: true,
-                closeOnClick: true,
-            }).setLngLat(event.lngLat).setHTML(html).addTo(map.current);
+        if (features.length > 0 ) {
+            if (features[0].layer?.id.startsWith(layer_pattern)) {
+                const feature = features[0];
+                console.log(feature)
+                console.log(feature.properties)
+                const html = `
+                    <div>
+                        <h2>${feature.properties?.MSOA21NM ? feature.properties?.MSOA21NM : feature.properties?.LAD22NM}</h2>
+                        <p>
+                            Median price per sqm: £${feature.properties?.priceper_median.toFixed(2)}
+                        </p>
+                        <p>
+                            Population density: ${feature.properties?.population_density.toFixed(2)}
+                        </p>
+                    </div>
+                `
+                popup.current = new mapboxgl.Popup({
+                    closeButton: true,
+                    closeOnClick: true,
+                }).setLngLat(event.lngLat).setHTML(html).addTo(map.current);
+            } else if (features[0].layer?.id === 'constituencies') {
+                const feature = features[0];
+                console.log(feature)
+                console.log(feature.properties)
+                const html = `
+                    <div>
+                        <h2>${feature.properties?.['Constituency name']}</h2>
+                        <p>
+                            Majority (Absolute): ${feature.properties?.Majority}
+                        </p>
+                        <p>
+                            Majority (Percentage): ${((feature.properties?.Majority / feature.properties?.['Valid votes']) * 100).toFixed(2)}%
+                        </p>
+                    </div>
+                `
+                popup.current = new mapboxgl.Popup({
+                    closeButton: true,
+                    closeOnClick: true,
+                }).setLngLat(event.lngLat).setHTML(html).addTo(map.current);
+            }
         }
     }
 
