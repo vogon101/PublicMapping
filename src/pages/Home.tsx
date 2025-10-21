@@ -23,7 +23,7 @@ function Home() {
                         </p>
                     </div>
                 </Link>
-                <Link to="/psqm-rents" className="map-list-item">
+                {/* <Link to="/psqm-rents" className="map-list-item">
                     <img src={psqmRentThumbnail} alt="House prices per square metre" className="map-thumbnail" />
                     <div className="map-description">
                         <h2>2025 rents per square metre</h2>
@@ -31,7 +31,7 @@ function Home() {
                         
                         </p>
                     </div>
-                </Link>
+                </Link> */}
                 {/* Hidden until launch */}
                 {/* <Link to="/green-belt-election" className="map-list-item">
                     <img src={greenBeltThumbnail} alt="Green Belt election map" className="map-thumbnail" />
