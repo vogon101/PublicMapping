@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import "../style/Home.css";
 import psqmThumbnail from "../assets/Pricemap.png";
-import psqmRentThumbnail from "../assets/Rentmap.png";
+// import psqmRentThumbnail from "../assets/Rentmap.png";
 // import greenBeltThumbnail from "../assets/GBMap.png";
 
 function Home() {
