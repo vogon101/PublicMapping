@@ -8,6 +8,7 @@ import GreenBeltElectionMap from './pages/GreenBeltElectionMap'
 import { GBConstituencyTable } from './pages/GBConstituencies/GBConstituencyTable'
 import { YAMLEssay } from './pages/Essay'
 import GBStationsMap from './pages/GBStationsMap'
+import RentsPerSquareMetreMap from './pages/RentsPerSquareMetreMap'
 
 function App() {
   
@@ -39,6 +40,10 @@ function App() {
     {
       path: '/gb-stations',
       element: <GBStationsMap />,
+    },
+    {
+      path: '/psqm-rents',
+      element: <RentsPerSquareMetreMap />,
     }
   ])
 

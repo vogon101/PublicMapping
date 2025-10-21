@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import "../style/Home.css";
 import psqmThumbnail from "../assets/Pricemap.png";
+import psqmRentThumbnail from "../assets/Rentmap.png";
 // import greenBeltThumbnail from "../assets/GBMap.png";
 
 function Home() {
@@ -22,6 +23,15 @@ function Home() {
                         </p>
                     </div>
                 </Link>
+                <Link to="/psqm-rents" className="map-list-item">
+                    <img src={psqmRentThumbnail} alt="House prices per square metre" className="map-thumbnail" />
+                    <div className="map-description">
+                        <h2>2025 rents per square metre</h2>
+                        <p>
+                        
+                        </p>
+                    </div>
+                </Link>
                 {/* Hidden until launch */}
                 {/* <Link to="/green-belt-election" className="map-list-item">
                     <img src={greenBeltThumbnail} alt="Green Belt election map" className="map-thumbnail" />
@@ -32,7 +42,6 @@ function Home() {
                         </p>
                     </div>
                 </Link> */}
-                <h3>More coming soon...</h3>
             </div>
         </div>
     )
