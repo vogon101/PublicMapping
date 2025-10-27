@@ -19,8 +19,9 @@ function PerSquareMetreMap() {
     function setPsqmFilter(map: Map) {
         console.log(minPrice, maxPrice)
         const filter = ["all", [">=",["get", "priceper_median"], minPrice], ["<=", ["get", "priceper_median"], maxPrice]] as FilterSpecification
-        map.setFilter('msoa', filter)
-        map.setFilter('lad', filter)
+        map.setFilter('msoa copy', filter)
+        map.setFilter('lad copy', filter)
+        console.log(map.getFilter('msoa copy'))
     }
 
     function onClick(event: mapboxgl.MapMouseEvent) {
@@ -32,7 +33,7 @@ function PerSquareMetreMap() {
             console.log(feature.properties)
             const html = `
                 <div>
-                    <h3>${feature.properties?.MSOA21NM ? feature.properties?.MSOA21NM : feature.properties?.LAD22NM}</h3>
+                    <h3><b>${feature.properties?.MSOA21NM ? feature.properties?.MSOA21NM : feature.properties?.LAD22NM}</b></h3>
                     <p>
                         Median price per sqm: £${feature.properties?.priceper_median.toFixed(2)}
                     </p>
@@ -53,14 +54,14 @@ function PerSquareMetreMap() {
 
     function updateOpacity(map: Map) {
         console.log(map.getPaintProperty('msoa', 'fill-opacity'))
-        map.setPaintProperty('msoa', 'fill-opacity', [
+        map.setPaintProperty('msoa copy', 'fill-opacity', [
             "interpolate",
             ["linear"],
             ["zoom"],
             8, 0,
             8.5,opacity
         ]);
-        map.setPaintProperty('lad', 'fill-opacity', [
+        map.setPaintProperty('lad copy', 'fill-opacity', [
             "interpolate",
             ["linear"],
             ["zoom"],
@@ -79,7 +80,7 @@ function PerSquareMetreMap() {
             mapOpts={{
                 center: [-0.1276, 51.5074],
                 zoom: 10,
-                maxZoom: 14,
+                maxZoom: 13.9,
                 minZoom: 6
             }}
             attributionControl={
