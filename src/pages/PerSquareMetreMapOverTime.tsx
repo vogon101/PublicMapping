@@ -68,9 +68,9 @@ function PerSquareMetreMapOverTime() {
     const [year, setYear] = useState<number>(2024);
     const [selectedArea, setSelectedArea] = useState<AreaData | null>(null);
     const [showNominal, setShowNominal] = useState<boolean>(true);
-    const [showRealSelect, setShowRealSelect] = useState<boolean>(false);
+    const [showRealSelect, setShowRealSelect] = useState<boolean>(true);
     const [selectBaseYear, setSelectBaseYear] = useState<number>(2024);
-    const [showTableInRealTerms, setShowTableInRealTerms] = useState<boolean>(false);
+    const [showTableInRealTerms, setShowTableInRealTerms] = useState<boolean>(true);
     const [tableBaseYear, setTableBaseYear] = useState<number>(2024);
 
     function setPsqmFilter(map: Map) {
@@ -167,7 +167,7 @@ function PerSquareMetreMapOverTime() {
     //     ]);
     // }
 
-    useEffect(mapEffect(map, setPsqmFilter), [minPrice, maxPrice]);
+    useEffect(mapEffect(map, setPsqmFilter), [minPrice, maxPrice, year]);
     useEffect(mapEffect(map, activateYear), [year]);
     // useEffect(mapEffect(map, updateOpacity), [opacity]);
 
@@ -197,47 +197,51 @@ function PerSquareMetreMapOverTime() {
             }}
         >
             <img src={logoImage} alt="Logo" className="absolute bottom-2.5 left-2.5 max-w-[30%] max-h-[8vh] opacity-40 z-[1000] transition-all duration-300 ease-in-out rounded-[10px] p-[2vh] bg-white" />
-            <div className={`absolute top-2.5 left-2.5 z-[1000] bg-white rounded-[5px] shadow-[0_2px_4px_rgba(0,0,0,0.1)] max-w-[300px] max-[450px]:w-[calc(100vw-20px)] max-[450px]:left-2.5 max-[450px]:right-2.5 ${showSliders ? 'p-2.5 max-[450px]:p-[5px]' : 'p-2.5 pb-1.5 max-[450px]:p-[5px] max-[450px]:pb-[3px]'}`}>
+            <div className={`absolute top-2.5 left-2.5 z-[1000] bg-white rounded-[5px] shadow-[0_2px_4px_rgba(0,0,0,0.1)] max-w-[300px] max-[450px]:w-[calc(100vw-20px)] max-[450px]:left-2.5 max-[450px]:right-2.5 ${showSliders ? 'p-2.5 max-[450px]:p-[5px]' : 'py-1.5 px-2.5 max-[450px]:py-1 max-[450px]:px-[5px]'}`}>
                 <div className="flex justify-between items-center">
-                    <h3 className="m-0">Controls</h3>
+                    <h3 className={showSliders ? "m-0" : "m-0 text-base"}>Controls</h3>
                     <button className="bg-transparent border-none text-lg cursor-pointer p-[5px] text-[#333] transition-opacity duration-300 hover:opacity-70" onClick={() => setShowSliders(!showSliders)}>
                         {showSliders ? '▼' : '▶'}
                     </button>
                 </div>
-                <div className={`flex justify-between items-center mb-2.5 transition-all duration-300 ease-out ${showSliders ? 'max-h-[50px] opacity-100' : 'max-h-0 opacity-0 mb-0 overflow-hidden'}`}>
-                    <label className="max-w-[40%] flex-[1_0_100px] mr-2.5">
-                        <b>Min Price:</b><br />£{minPrice}
-                    </label>
-                    <input type="range" className="flex-1" min="0" max="10000" step="500" value={minPrice} onChange={(e) => {
-                        const newMinPrice = Number(e.target.value);
-                        setMinPrice(newMinPrice);
-                        if (newMinPrice > maxPrice) {
-                            setMaxPrice(newMinPrice * 1.1);
-                        }
-                    }} />
-                </div>
-                <div className={`flex justify-between items-center mb-2.5 transition-all duration-300 ease-out ${showSliders ? 'max-h-[50px] opacity-100' : 'max-h-0 opacity-0 mb-0 overflow-hidden'}`}>
-                    <label className="max-w-[40%] flex-[1_0_100px] mr-2.5">
-                        <b>Max Price:</b><br />£{maxPrice}
-                    </label>
-                    <input type="range" className="flex-1" min="0" max="30000" step="500" value={maxPrice} onChange={(e) => {
-                        const newMaxPrice = Number(e.target.value);
-                        setMaxPrice(newMaxPrice);
-                        if (newMaxPrice < minPrice) {
-                            setMinPrice(newMaxPrice * 0.9);
-                        }
-                    }} />
-                </div>
-                <div className={`flex justify-between items-center mb-2.5 transition-all duration-300 ease-out ${showSliders ? 'max-h-[50px] opacity-100' : 'max-h-0 opacity-0 mb-0 overflow-hidden'}`}>
-                    <label className="max-w-[40%] flex-[1_0_100px] mr-2.5"><b>Year:</b></label>
-                    <select className="flex-1" value={year} onChange={(e) => setYear(Number(e.target.value))}>
-                        {[
-                            ...Array.from({ length: 15 }, (_, i) => i + 2010).reverse().map((year) => (
-                                <option value={year} key={year}>{year}</option>
-                            ))
-                        ]}
-                    </select>
-                </div>
+                {showSliders && (
+                    <>
+                        <div className="flex justify-between items-center mb-2.5">
+                            <label className="max-w-[40%] flex-[1_0_100px] mr-2.5">
+                                <b>Min Price:</b><br />£{minPrice}
+                            </label>
+                            <input type="range" className="flex-1" min="0" max="10000" step="500" value={minPrice} onChange={(e) => {
+                                const newMinPrice = Number(e.target.value);
+                                setMinPrice(newMinPrice);
+                                if (newMinPrice > maxPrice) {
+                                    setMaxPrice(newMinPrice * 1.1);
+                                }
+                            }} />
+                        </div>
+                        <div className="flex justify-between items-center mb-2.5">
+                            <label className="max-w-[40%] flex-[1_0_100px] mr-2.5">
+                                <b>Max Price:</b><br />£{maxPrice}
+                            </label>
+                            <input type="range" className="flex-1" min="0" max="30000" step="500" value={maxPrice} onChange={(e) => {
+                                const newMaxPrice = Number(e.target.value);
+                                setMaxPrice(newMaxPrice);
+                                if (newMaxPrice < minPrice) {
+                                    setMinPrice(newMaxPrice * 0.9);
+                                }
+                            }} />
+                        </div>
+                        <div className="flex justify-between items-center mb-2.5">
+                            <label className="max-w-[40%] flex-[1_0_100px] mr-2.5"><b>Year:</b></label>
+                            <select className="flex-1 px-2 py-1 border border-gray-300 rounded bg-white text-base" value={year} onChange={(e) => setYear(Number(e.target.value))}>
+                                {[
+                                    ...Array.from({ length: 15 }, (_, i) => i + 2010).reverse().map((year) => (
+                                        <option value={year} key={year}>{year}</option>
+                                    ))
+                                ]}
+                            </select>
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Slide-in panel for chart */}
@@ -251,8 +255,8 @@ function PerSquareMetreMapOverTime() {
 
                     {/* Panel */}
                     <div className="fixed bottom-0 left-0 right-0 max-h-[80vh] md:bottom-auto md:top-0 md:right-0 md:left-auto md:w-[500px] md:h-full md:max-h-full bg-white z-[1002] shadow-xl animate-slide-up md:animate-slide-left overflow-y-auto">
-                        <div className="p-5">
-                            <div className="flex justify-between items-start mb-3">
+                        <div className="sticky top-0 bg-white z-10 p-5 pb-3 border-b shadow-sm">
+                            <div className="flex justify-between items-start">
                                 <h3 className="text-lg font-bold m-0">{selectedArea.name}</h3>
                                 <button
                                     onClick={() => setSelectedArea(null)}
@@ -261,6 +265,8 @@ function PerSquareMetreMapOverTime() {
                                     ×
                                 </button>
                             </div>
+                        </div>
+                        <div className="p-5 pt-3">
 
                             <div className="mb-3 space-y-2">
                                 <label className="flex items-center cursor-pointer">
@@ -283,7 +289,7 @@ function PerSquareMetreMapOverTime() {
                                     <select
                                         value={selectBaseYear}
                                         onChange={(e) => setSelectBaseYear(Number(e.target.value))}
-                                        className="ml-2 text-sm border rounded px-1"
+                                        className="ml-2 px-2 py-1 border border-gray-300 rounded bg-white text-sm"
                                         disabled={!showRealSelect}
                                     >
                                         {Array.from({ length: 15 }, (_, i) => i + 2010).map((y) => (
@@ -371,7 +377,7 @@ function PerSquareMetreMapOverTime() {
                                         <select
                                             value={tableBaseYear}
                                             onChange={(e) => setTableBaseYear(Number(e.target.value))}
-                                            className="ml-2 text-sm border rounded px-1"
+                                            className="ml-2 px-2 py-1 border border-gray-300 rounded bg-white text-sm"
                                             disabled={!showTableInRealTerms}
                                         >
                                             {Array.from({ length: 15 }, (_, i) => i + 2010).map((y) => (
@@ -385,8 +391,8 @@ function PerSquareMetreMapOverTime() {
                                         <thead>
                                             <tr className="border-b">
                                                 <th className="text-left p-2 font-semibold">Year</th>
-                                                <th className="text-right p-2 font-semibold">Median £/sqm</th>
-                                                <th className="text-right p-2 font-semibold">Mean £/sqm</th>
+                                                <th className="text-right p-2 font-semibold">Median £/sqm {showTableInRealTerms ? '(real)' : '(nominal)'}</th>
+                                                <th className="text-right p-2 font-semibold">Mean £/sqm {showTableInRealTerms ? '(real)' : '(nominal)'}</th>
                                                 <th className="text-right p-2 font-semibold">Sales Count</th>
                                             </tr>
                                         </thead>
