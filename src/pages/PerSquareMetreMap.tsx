@@ -98,19 +98,19 @@ function PerSquareMetreMap() {
                 updateOpacity(map.current!);
             }}
         >
-            <img src={logoImage} alt="Logo" className="map-logo" />
-            <div className="map-control">
-                <div className="price-slider-header">
-                    <h3>Controls</h3>
-                    <button className="toggle-button" onClick={() => setShowSliders(!showSliders)}>
+            <img src={logoImage} alt="Logo" className="absolute top-2.5 right-2.5 max-w-[50%] max-h-[8vh] opacity-40 z-[1000] transition-all duration-300 ease-in-out rounded-[10px] p-[2vh] bg-white md:bottom-10 md:left-2.5 md:top-auto md:right-auto md:max-w-[30%]" />
+            <div className="absolute top-2.5 left-2.5 z-[1000] bg-white rounded-[5px] p-2.5 shadow-[0_2px_4px_rgba(0,0,0,0.1)] max-w-[300px] max-[450px]:w-[calc(100%-20px)] max-[450px]:left-[5px] max-[450px]:p-[5px]">
+                <div className="flex justify-between items-center">
+                    <h3 className="m-0">Controls</h3>
+                    <button className="bg-transparent border-none text-lg cursor-pointer p-[5px] text-[#333] transition-opacity duration-300 hover:opacity-70" onClick={() => setShowSliders(!showSliders)}>
                         {showSliders ? '▼' : '▶'}
                     </button>
                 </div>
-                <div className={`slider-row ${showSliders ? 'visible' : 'hidden'}`}>
-                    <label>
+                <div className={`flex justify-between items-center mb-2.5 transition-all duration-300 ease-out ${showSliders ? 'max-h-[50px] opacity-100' : 'max-h-0 opacity-0 mb-0 overflow-hidden'}`}>
+                    <label className="max-w-[40%] flex-[1_0_100px] mr-2.5">
                         <b>Min Price:</b><br/>£{minPrice}
                     </label>
-                    <input type="range" min="0" max="10000" step="500" value={minPrice} onChange={(e) => {
+                    <input type="range" className="flex-1" min="0" max="10000" step="500" value={minPrice} onChange={(e) => {
                         const newMinPrice = Number(e.target.value);
                         setMinPrice(newMinPrice);
                         if (newMinPrice > maxPrice) {
@@ -118,11 +118,11 @@ function PerSquareMetreMap() {
                         }
                     }} />
                 </div>
-                <div className={`slider-row ${showSliders ? 'visible' : 'hidden'}`}>
-                    <label>
+                <div className={`flex justify-between items-center mb-2.5 transition-all duration-300 ease-out ${showSliders ? 'max-h-[50px] opacity-100' : 'max-h-0 opacity-0 mb-0 overflow-hidden'}`}>
+                    <label className="max-w-[40%] flex-[1_0_100px] mr-2.5">
                         <b>Max Price:</b><br/>£{maxPrice}
                     </label>
-                    <input type="range" min="0" max="30000" step="500" value={maxPrice} onChange={(e) => {
+                    <input type="range" className="flex-1" min="0" max="30000" step="500" value={maxPrice} onChange={(e) => {
                         const newMaxPrice = Number(e.target.value);
                         setMaxPrice(newMaxPrice);
                         if (newMaxPrice < minPrice) {
@@ -130,11 +130,11 @@ function PerSquareMetreMap() {
                         }
                     }} />
                 </div>
-                <div className={`slider-row ${showSliders ? 'visible' : 'hidden'}`}>
-                    <label>
+                <div className={`flex justify-between items-center mb-2.5 transition-all duration-300 ease-out ${showSliders ? 'max-h-[50px] opacity-100' : 'max-h-0 opacity-0 mb-0 overflow-hidden'}`}>
+                    <label className="max-w-[40%] flex-[1_0_100px] mr-2.5">
                         <b>Opacity:</b><br/>{opacity * 100}%
                     </label>
-                    <input type="range" min="0" max="1" step="0.05" value={opacity} onChange={(e) => {
+                    <input type="range" className="flex-1" min="0" max="1" step="0.05" value={opacity} onChange={(e) => {
                         setOpacity(Number(e.target.value));
                     }} />
                 </div>

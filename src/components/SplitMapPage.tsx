@@ -107,22 +107,22 @@ export default function SplitMapPage({leftMap, rightMap, children, showRight = t
     }, []);
 
     return (
-        <div 
-            className="split-map-page" 
+        <div
+            className="relative w-screen h-screen"
             onMouseMove={onDrag}
             onTouchMove={onDrag}
             onTouchStart={(e) => e.preventDefault()}
         >
-            <div className="split-map-left" style={{clipPath: showRight ? `rect(0 ${border}px 100vh 0)` : 'rect(0 100vw 100vh 0)', transform: `translateZ(0)`}}>
+            <div style={{clipPath: showRight ? `rect(0 ${border}px 100vh 0)` : 'rect(0 100vw 100vh 0)', transform: `translateZ(0)`}}>
                 <MapPage {...leftMap} />
             </div>
-            <div className="split-map-right" style={{clipPath: `rect(0 100vw 100vh ${border}px)`, transform: `translateZ(0)`, visibility: showRight ? 'visible' : 'hidden'}}>
+            <div style={{clipPath: `rect(0 100vw 100vh ${border}px)`, transform: `translateZ(0)`, visibility: showRight ? 'visible' : 'hidden'}}>
                 <MapPage {...rightMap} />
             </div>
             {showRight && (
-                <div 
+                <div
                     ref={overlayRef}
-                    className="split-map-overlay" 
+                    className="absolute top-0 -left-2.5 w-5 h-screen bg-black/50 cursor-col-resize z-[1000] touch-none md:-left-3 md:w-6 before:content-[''] before:absolute before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:w-1 before:h-10 before:bg-white before:rounded-[2px]"
                     style={{transform: `translateX(${border}px)`}}
                     onMouseDown={startDragging}
                     onTouchStart={startDragging}
@@ -130,7 +130,7 @@ export default function SplitMapPage({leftMap, rightMap, children, showRight = t
             )}
             {children}
             {showAnimate && (
-                <div className="map-control" style={{transform: `translateY(200px)`}} >
+                <div className="absolute top-2.5 left-2.5 z-[1000] bg-white rounded-[5px] p-2.5 shadow-[0_2px_4px_rgba(0,0,0,0.1)] max-w-[300px] max-[450px]:w-[calc(100%-20px)] max-[450px]:left-[5px] max-[450px]:p-[5px]" style={{transform: `translateY(200px)`}} >
                     <button onClick={animate} disabled={isAnimating || !showRight}>
                         {isAnimating ? "Animating..." : "Animate"}
                     </button>

@@ -141,10 +141,10 @@ export default function GreenBeltElectionMap() {
                 }
             }}
         >
-            <img src={logoImage} alt="Logo" className="map-logo" />
-            <div className="map-control">
-                <h3>Who represents the Green Belt?</h3>
-                <div className="slider-row">
+            <img src={logoImage} alt="Logo" className="absolute top-2.5 right-2.5 max-w-[50%] max-h-[8vh] opacity-40 z-[1000] transition-all duration-300 ease-in-out rounded-[10px] p-[2vh] bg-white md:bottom-10 md:left-2.5 md:top-auto md:right-auto md:max-w-[30%]" />
+            <div className="absolute top-2.5 left-2.5 z-[1000] bg-white rounded-[5px] p-2.5 shadow-[0_2px_4px_rgba(0,0,0,0.1)] max-w-[300px] max-[450px]:w-[calc(100%-20px)] max-[450px]:left-[5px] max-[450px]:p-[5px]">
+                <h3 className="m-0">Who represents the Green Belt?</h3>
+                <div className="flex justify-between items-center mb-2.5">
                     <label>{splitMode ? "Left" : ""} Election</label>
                     <select onChange={(e) => setElectionLeft(e.target.value as Election)} value={electionLeft}>
                         <option value="2015">2015</option>
@@ -154,7 +154,7 @@ export default function GreenBeltElectionMap() {
                     </select>
                 </div>
                 {splitMode && (
-                    <div className="slider-row">
+                    <div className="flex justify-between items-center mb-2.5">
                         <label>Right Election</label>
                         <select onChange={(e) => setElectionRight(e.target.value as Election)} value={electionRight}>
                         <option value="2015">2015</option>
@@ -167,7 +167,7 @@ export default function GreenBeltElectionMap() {
                 <button onClick={() => setSplitMode(!splitMode)}>Switch to {splitMode ? "Single" : "Split"} Map</button>
                 <button onClick={() => setShowBarChart(!showBarChart)}>{showBarChart ? "Hide" : "Show"} Bar Chart</button>
 
-                <div className={`bar-chart-container ${showBarChart ? "visible" : "hidden"}`}>
+                <div className={`p-2.5 transition-all duration-300 ease-in-out ${showBarChart ? "max-h-[30vh] opacity-100" : "max-h-0 opacity-0 overflow-hidden"}`}>
                     <ResponsiveContainer width="100%" height={window.innerHeight * 0.3}>
                         <BarChart data={data} >
                             <XAxis dataKey="name"/>

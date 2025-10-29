@@ -4,14 +4,53 @@
 
 @layer base {
   :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
   }
 
   .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -20,264 +59,29 @@
   }
 }
 
+@layer base {
+  * {
+    @apply border-border;
+  }
 
-.mapbox-map {
-    position: absolute;
-    top: 0;
-    bottom: 0;
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  body, #root {
+    margin: 0;
+    padding: 0;
+    font-family: 'Lato', sans-serif;
     width: 100%;
-    height: 100vh;
-}
-
-.map-container {
-  height: 100vh;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%
-}
-
-body, #root {
-  margin: 0;
-  padding: 0;
-  font-family: 'Lato', sans-serif;
-  width: 100%;
-  height: 100%;
-}
-
-
-
-
-.map-control {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 1000;
-  background-color: #fff;
-  border-radius: 5px;
-  padding: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  max-width:300px;
-}
-
-.slider-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  /* max-height: 50px; */
-  overflow: hidden;
-  transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
-  opacity: 1;
-}
-
-.slider-row label {
-  max-width: 40%;
-  flex: 1 0 100px;
-  margin-right: 10px;
-}
-
-.slider-row input[type="range"] {
-  flex: 1;
-}
-
-@media (max-width: 450px) {
-  .price-slider {
-    width: calc(100% - 40px);
-    border-radius: 0;
-  }
-
-  .map-control {
-    width: calc(100% - 20px);
-    left: 5px;
-    padding: 5px;
+    height: 100%;
   }
 }
 
-.slider-row.hidden {
-  max-height: 0;
-  opacity: 0;
-  margin-bottom: 0;
-}
-
-.price-slider-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  /* margin-bottom: 10px; */
-}
-
-.price-slider-header h3 {
-  margin: 0;
-}
-
-.toggle-button {
-  background: none;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
-  padding: 5px;
-  color: #333; /* Adjust color to match your design */
-  transition: opacity 0.3s ease;
-}
-
-.toggle-button:hover {
-  opacity: 0.7;
-}
-
-.map-logo {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  max-width: 50%;
-  max-height: 8vh;
-  opacity: 0.4;
-  z-index: 1000;
-  transition: all 0.3s ease;
-  border-radius: 10px;
-  padding: 2vh;
-  background-color: #fff;
-}
-
-@media (max-width: 768px) {
-  .map-logo {
-    top: auto;
-    right: auto;
-    bottom: 40px; /* Increased from 10px to position it above the Mapbox logo */
-    left: 10px;
-    max-width: 30%; /* Reduced from 50% to make it smaller on mobile */
-    max-height: 8vh; /* Reduced from 10vh to make it smaller on mobile */
-  }
-}
-
+/* Mapbox-specific styles that can't be replaced with Tailwind */
 .mapboxgl-ctrl-attrib-inner {
   font-size: 12px;
   line-height: 24px;
   padding: 0 5px;
   background-color: rgba(255, 255, 255, 0.7);
   border-radius: 3px;
-}
-
-.split-map-page {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-}
-
-.split-map-overlay {
-  position: absolute;
-  top: 0;
-  left: -10px;
-  width: 20px;
-  height: 100vh;
-  background-color: rgba(255, 255, 255, 0.5);
-  cursor: col-resize;
-  z-index: 1000;
-  touch-action: none;
-}
-
-.split-map-overlay::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 4px;
-  height: 40px;
-  background-color: #fff;
-  border-radius: 2px;
-}
-
-.split-map-overlay {
-  position: absolute;
-  top: 0;
-  left: -10px;
-  width: 20px;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
-}
-
-@media (max-width: 768px) {
-  .split-map-overlay {
-    left: -12px;
-    width: 24px;
-  }
-}
-
-.bar-chart-container {
-  padding: 10px;
-  max-height: 30vh; /* Adjust this value based on your needs */
-  opacity: 1;
-  transition: max-height 0.3s ease, opacity 0.5s ease;
-}
-
-.bar-chart-container.hidden {
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-}
-
-@layer base {
-  :root {
-        --background: 0 0% 100%;
-        --foreground: 0 0% 3.9%;
-        --card: 0 0% 100%;
-        --card-foreground: 0 0% 3.9%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 0 0% 3.9%;
-        --primary: 0 0% 9%;
-        --primary-foreground: 0 0% 98%;
-        --secondary: 0 0% 96.1%;
-        --secondary-foreground: 0 0% 9%;
-        --muted: 0 0% 96.1%;
-        --muted-foreground: 0 0% 45.1%;
-        --accent: 0 0% 96.1%;
-        --accent-foreground: 0 0% 9%;
-        --destructive: 0 84.2% 60.2%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 89.8%;
-        --input: 0 0% 89.8%;
-        --ring: 0 0% 3.9%;
-        --chart-1: 12 76% 61%;
-        --chart-2: 173 58% 39%;
-        --chart-3: 197 37% 24%;
-        --chart-4: 43 74% 66%;
-        --chart-5: 27 87% 67%;
-        --radius: 0.5rem;
-    }
-  .dark {
-        --background: 0 0% 3.9%;
-        --foreground: 0 0% 98%;
-        --card: 0 0% 3.9%;
-        --card-foreground: 0 0% 98%;
-        --popover: 0 0% 3.9%;
-        --popover-foreground: 0 0% 98%;
-        --primary: 0 0% 98%;
-        --primary-foreground: 0 0% 9%;
-        --secondary: 0 0% 14.9%;
-        --secondary-foreground: 0 0% 98%;
-        --muted: 0 0% 14.9%;
-        --muted-foreground: 0 0% 63.9%;
-        --accent: 0 0% 14.9%;
-        --accent-foreground: 0 0% 98%;
-        --destructive: 0 62.8% 30.6%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 14.9%;
-        --input: 0 0% 14.9%;
-        --ring: 0 0% 83.1%;
-        --chart-1: 220 70% 50%;
-        --chart-2: 160 60% 45%;
-        --chart-3: 30 80% 55%;
-        --chart-4: 280 65% 60%;
-        --chart-5: 340 75% 55%;
-    }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-    }
-  body {
-    @apply bg-background text-foreground;
-    }
 }

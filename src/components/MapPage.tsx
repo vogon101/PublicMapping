@@ -53,12 +53,12 @@ export default function MapPage ({styleUrl, map, mapOpts, attributionControl, on
     useEffect(initialiseMap, [])
 
     return (<>
-        {useContainer ? 
-            <div className="map-container">
-                <div className="mapbox-map" ref={mapContainer} />
+        {useContainer ?
+            <div className="h-screen absolute top-0 left-0 w-full">
+                <div className="absolute top-0 bottom-0 w-full h-screen" ref={mapContainer} />
                 {children}
-            </div> : 
-            <div className={`${mapClassName ?? 'mapbox-map'}`} ref={mapContainer} />
+            </div> :
+            <div className={`${mapClassName ?? 'absolute top-0 bottom-0 w-full h-screen'}`} ref={mapContainer} />
         }
     </>)
 
