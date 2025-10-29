@@ -9,6 +9,7 @@ import { GBConstituencyTable } from './pages/GBConstituencies/GBConstituencyTabl
 import { YAMLEssay } from './pages/Essay'
 import GBStationsMap from './pages/GBStationsMap'
 import RentsPerSquareMetreMap from './pages/RentsPerSquareMetreMap'
+import PerSquareMetreMapOverTime from './pages/PerSquareMetreMapOverTime'
 
 function App() {
   
@@ -44,6 +45,10 @@ function App() {
     {
       path: '/psqm-rents',
       element: <RentsPerSquareMetreMap />,
+    },
+    {
+      path: '/psqm-over-time',
+      element: <PerSquareMetreMapOverTime />,
     }
   ])
 
