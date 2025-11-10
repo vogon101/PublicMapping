@@ -4,9 +4,13 @@ import { useRef, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import logoImage from '../assets/logo_colour_tight.png';
 import MapPage from '../components/MapPage';
+import { useToast } from '../hooks/use-toast';
 
 const mapbox_token = import.meta.env.VITE_APP_MAPBOX_TOKEN
 mapboxgl.accessToken = mapbox_token
+
+// Feature flag to enable cross-linking between maps
+const ENABLE_CROSS_LINKING = true;
 
 interface AreaData {
     name: string;
@@ -22,16 +26,13 @@ function RentsPerSquareMetreMap() {
     const map = useRef<mapboxgl.Map | null>(null);
     const [selectedArea, setSelectedArea] = useState<AreaData | null>(null);
     const [searchParams] = useSearchParams();
+    const { toast } = useToast();
 
     function onClick(event: mapboxgl.MapMouseEvent) {
         if (!map.current) return;
         const features = map.current.queryRenderedFeatures(event.point)
-        console.log('onClick - features found:', features.length);
         if (features.length > 0) {
             const feature = features[0];
-            console.log('onClick - feature:', feature)
-            console.log('onClick - feature.properties:', feature.properties)
-            console.log('onClick - LAD code:', feature.properties?.LAD25CD);
 
             setSelectedArea({
                 name: feature.properties?.LAD25NM || 'Unknown Area',
@@ -41,61 +42,27 @@ function RentsPerSquareMetreMap() {
                 cpm2_2: feature.properties?.cpm2_2 || 0,
                 cpm2_3: feature.properties?.cpm2_3 || 0
             });
-            console.log('onClick - selectedArea set with LAD code:', feature.properties?.LAD25CD);
         }
     }
 
-    // Handle URL parameters to zoom to and select an area
-    useEffect(() => {
-        const ladCode = searchParams.get('lad');
-        if (ladCode && map.current && map.current.isStyleLoaded()) {
-            console.log('Looking for LAD:', ladCode);
-
-            // Query for features with this LAD code
-            const features = map.current.querySourceFeatures('composite', {
-                sourceLayer: 'psqm-rents-lad-24-byyear-6rj6d2'
-            });
-
-            console.log('Found features:', features.length);
-            const feature = features.find(f => f.properties?.LAD25CD === ladCode);
-            console.log('Matched feature:', feature);
-
-            if (feature && feature.properties) {
-                setSelectedArea({
-                    name: feature.properties.LAD25NM || 'Unknown Area',
-                    ladCode: feature.properties.LAD25CD || '',
-                    cpm2_overall: feature.properties.cpm2_overall || 0,
-                    cpm2_1: feature.properties.cpm2_1 || 0,
-                    cpm2_2: feature.properties.cpm2_2 || 0,
-                    cpm2_3: feature.properties.cpm2_3 || 0
-                });
-
-                // Zoom to the feature if it has geometry
-                if (feature.geometry && feature.geometry.type === 'Polygon') {
-                    const coordinates = feature.geometry.coordinates[0];
-                    const bounds = coordinates.reduce((bounds: mapboxgl.LngLatBounds, coord: number[]) => {
-                        return bounds.extend(coord as [number, number]);
-                    }, new mapboxgl.LngLatBounds(coordinates[0] as [number, number], coordinates[0] as [number, number]));
-
-                    map.current.fitBounds(bounds, {
-                        padding: 50,
-                        maxZoom: 10
-                    });
-                }
-            }
-        }
-    }, [searchParams]);
 
     return (
         <MapPage
             styleUrl='mapbox://styles/freddie-yimby/cmgzop50e009201sa7qqcgtwd'
             map={map}
-            mapOpts={{
-                center: [-0.5, 52],
-                zoom: 7,
-                maxZoom: 12,
-                minZoom: 6
-            }}
+            mapOpts={
+                searchParams.get('lad') ? {
+                    bounds: [[-6.5, 49.8], [2.0, 59.0]],
+                    fitBoundsOptions: { padding: 20 },
+                    maxZoom: 12,
+                    minZoom: 6
+                } : {
+                    center: [-0.5, 52],
+                    zoom: 7,
+                    maxZoom: 12,
+                    minZoom: 6
+                }
+            }
             attributionControl={
                 new mapboxgl.AttributionControl({
                     customAttribution: [
@@ -107,90 +74,63 @@ function RentsPerSquareMetreMap() {
             }
             onClick={onClick}
             onLoad={() => {
-                console.log('=== RENTS MAP LOADED ===');
+                if (!ENABLE_CROSS_LINKING || !map.current) return;
 
-                if (!map.current) return;
-
-                // Wait for the style to be fully loaded before querying features
                 const handleStyleLoad = () => {
-                    console.log('=== RENTS MAP STYLE LOADED ===');
                     const ladCode = searchParams.get('lad');
-                    console.log('URL parameter lad:', ladCode);
+                    if (!ladCode || !map.current) return;
 
-                    if (ladCode && map.current) {
-                        console.log('Map loaded, looking for LAD:', ladCode);
-                        console.log('Map style loaded:', map.current.isStyleLoaded());
 
-                        // Log available layers
-                        const style = map.current.getStyle();
-                        console.log('Available layers:', style?.layers?.map(l => l.id));
-                        console.log('Available sources:', Object.keys(style?.sources || {}));
+                    console.log(map.current.getStyle().layers)
+                    const sourceFeatures = map.current.querySourceFeatures('composite', {
+                        sourceLayer: 'psqm-rents'
+                    });
 
-                        // Try queryRenderedFeatures instead which gets visible features
-                        const allFeatures = map.current.queryRenderedFeatures();
-                        console.log('Total rendered features:', allFeatures.length);
+                    const feature = sourceFeatures.find(f => f.properties?.LAD25CD === ladCode);
 
-                        // Get LAD layer features specifically
-                        const ladLayerFeatures = allFeatures.filter(f =>
-                            f.sourceLayer === 'psqm-rents-lad-24-byyear-6rj6d2' ||
-                            f.layer?.id?.includes('rents') ||
-                            f.properties?.LAD25CD
-                        );
-                        console.log('LAD layer features:', ladLayerFeatures.length);
-
-                        if (ladLayerFeatures.length > 0) {
-                            console.log('Sample LAD codes from rendered features:', ladLayerFeatures.slice(0, 10).map(f => ({
-                                code: f.properties?.LAD25CD,
-                                name: f.properties?.LAD25NM,
-                                layer: f.layer?.id,
-                                sourceLayer: f.sourceLayer
-                            })));
-                        }
-
-                        // Search for the LAD code
-                        console.log('Searching for LAD code:', ladCode);
-                        const matchingFeatures = ladLayerFeatures.filter(f => {
-                            const matches = f.properties?.LAD25CD === ladCode;
-                            if (matches) {
-                                console.log('FOUND MATCH!', f.properties?.LAD25CD, f.properties?.LAD25NM);
-                            }
-                            return matches;
+                    if (!feature) {
+                        toast({
+                            title: "Area not found",
+                            description: `Could not find rental data for LAD code: ${ladCode}`,
+                            variant: "destructive",
                         });
-                        console.log('Number of matching features:', matchingFeatures.length);
+                        return;
+                    }
 
-                        const feature = matchingFeatures[0];
-                        console.log('Matched feature:', feature);
+                    if (feature && feature.properties) {
+                        setSelectedArea({
+                            name: feature.properties.LAD25NM || 'Unknown Area',
+                            ladCode: feature.properties.LAD25CD || '',
+                            cpm2_overall: feature.properties.cpm2_overall || 0,
+                            cpm2_1: feature.properties.cpm2_1 || 0,
+                            cpm2_2: feature.properties.cpm2_2 || 0,
+                            cpm2_3: feature.properties.cpm2_3 || 0
+                        });
 
-                        if (feature && feature.properties) {
-                            console.log('Setting selected area for:', feature.properties.LAD25NM);
-                            setSelectedArea({
-                                name: feature.properties.LAD25NM || 'Unknown Area',
-                                ladCode: feature.properties.LAD25CD || '',
-                                cpm2_overall: feature.properties.cpm2_overall || 0,
-                                cpm2_1: feature.properties.cpm2_1 || 0,
-                                cpm2_2: feature.properties.cpm2_2 || 0,
-                                cpm2_3: feature.properties.cpm2_3 || 0
-                            });
+                        // Zoom to the feature
+                        if (feature.geometry) {
+                            let bounds = new mapboxgl.LngLatBounds();
 
-                            // Zoom to the feature if it has geometry
-                            if (feature.geometry && feature.geometry.type === 'Polygon') {
-                                console.log('Zooming to feature bounds');
+                            if (feature.geometry.type === 'Polygon') {
                                 const coordinates = feature.geometry.coordinates[0];
-                                const bounds = coordinates.reduce((bounds: mapboxgl.LngLatBounds, coord: number[]) => {
-                                    return bounds.extend(coord as [number, number]);
-                                }, new mapboxgl.LngLatBounds(coordinates[0] as [number, number], coordinates[0] as [number, number]));
+                                coordinates.forEach((coord: number[]) => {
+                                    bounds.extend(coord as [number, number]);
+                                });
+                            } else if (feature.geometry.type === 'MultiPolygon') {
+                                feature.geometry.coordinates.forEach((polygon: number[][][]) => {
+                                    polygon[0].forEach((coord: number[]) => {
+                                        bounds.extend(coord as [number, number]);
+                                    });
+                                });
+                            }
 
+                            if (!bounds.isEmpty()) {
                                 map.current.fitBounds(bounds, {
                                     padding: 50,
                                     maxZoom: 10
                                 });
                             }
-                        } else {
-                            console.error('No matching feature found for LAD code:', ladCode);
                         }
-                    } else {
-                        if (!ladCode) console.log('No LAD parameter in URL');
-                        if (!map.current) console.error('Map not initialized');
                     }
                 };
 
@@ -244,14 +184,16 @@ function RentsPerSquareMetreMap() {
                                     </div>
                                 </div>
 
-                                <div className="border-t pt-3">
-                                    <a
-                                        href={`/psqm-over-time?lad=${selectedArea.ladCode}`}
-                                        className="block w-full p-3 bg-blue-600 text-white text-center rounded font-semibold hover:bg-blue-700 transition-colors no-underline"
-                                    >
-                                        View sales prices for {selectedArea.name} →
-                                    </a>
-                                </div>
+                                {ENABLE_CROSS_LINKING && selectedArea.ladCode && (
+                                    <div className="border-t pt-3">
+                                        <a
+                                            href={`/psqm-over-time?lad=${selectedArea.ladCode}`}
+                                            className="block w-full p-3 bg-blue-600 text-white text-center rounded font-semibold hover:bg-blue-700 transition-colors no-underline"
+                                        >
+                                            View sales prices for {selectedArea.name} →
+                                        </a>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

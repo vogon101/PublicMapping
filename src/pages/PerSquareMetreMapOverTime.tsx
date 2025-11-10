@@ -5,9 +5,13 @@ import { useSearchParams } from "react-router-dom";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 import logoImage from '../assets/logo_colour_tight.png';
 import MapPage, { mapEffect } from '../components/MapPage';
+import { useToast } from '../hooks/use-toast';
 
 const mapbox_token = import.meta.env.VITE_APP_MAPBOX_TOKEN
 mapboxgl.accessToken = mapbox_token
+
+// Feature flag to enable cross-linking between maps
+const ENABLE_CROSS_LINKING = true;
 
 interface AreaData {
     name: string;
@@ -77,6 +81,7 @@ function PerSquareMetreMapOverTime() {
     const [showTableInRealTerms, setShowTableInRealTerms] = useState<boolean>(true);
     const [tableBaseYear, setTableBaseYear] = useState<number>(2024);
     const [searchParams] = useSearchParams();
+    const { toast } = useToast();
 
     function setPsqmFilter(map: Map) {
         console.log(minPrice, maxPrice)
@@ -116,24 +121,22 @@ function PerSquareMetreMapOverTime() {
     function onClick(event: mapboxgl.MapMouseEvent) {
         if (!map.current) return;
         const features = map.current.queryRenderedFeatures(event.point)
-        console.log('onClick - features found:', features.length);
         if (features.length > 0) {
             const feature = features[0];
-            console.log('onClick - feature:', feature)
-            console.log('onClick - feature.properties:', feature.properties)
 
             const isMSOA = !!feature.properties?.MSOA21NM;
-            // For MSOAs, try to find the LAD code from MSOA properties
-            let ladCode = feature.properties?.LAD25CD || feature.properties?.LAD24CD;
-            let ladName = feature.properties?.LAD25NM || feature.properties?.LAD24NM;
 
-            // MSOAs may have LAD codes with different property names, check common ones
-            if (isMSOA && !ladCode) {
-                ladCode = feature.properties?.LAD24CD || feature.properties?.LAD23CD || feature.properties?.LADCD;
-                ladName = feature.properties?.LAD24NM || feature.properties?.LAD23NM || feature.properties?.LADNM;
+            // For MSOAs, use ladcd_first property; for LADs, use LAD25CD/LAD24CD
+            let ladCode: string | undefined;
+            let ladName: string | undefined;
+
+            if (isMSOA) {
+                ladCode = feature.properties?.ladcd_first;
+                ladName = feature.properties?.ladnm_first;
+            } else {
+                ladCode = feature.properties?.LAD25CD || feature.properties?.LAD24CD;
+                ladName = feature.properties?.LAD25NM || feature.properties?.LAD24NM;
             }
-
-            console.log('onClick - isMSOA:', isMSOA, 'LAD code:', ladCode, 'LAD name:', ladName);
 
             // Extract time series data for all years
             const years = Array.from({ length: 15 }, (_, i) => i + 2010);
@@ -168,90 +171,8 @@ function PerSquareMetreMapOverTime() {
                     year: 2024
                 }
             });
-            console.log('onClick - selectedArea set with LAD code:', ladCode);
         }
     }
-
-    // Handle URL parameters to zoom to and select an area
-    useEffect(() => {
-        const ladCode = searchParams.get('lad');
-        if (ladCode && map.current && map.current.isStyleLoaded()) {
-            console.log('Looking for LAD:', ladCode);
-
-            // Try to find LAD first
-            const ladFeatures = map.current.querySourceFeatures('composite', {
-                sourceLayer: 'psqm-sales-lad-24-byyear-afo4fj'
-            });
-
-            console.log('Found LAD features:', ladFeatures.length);
-            const ladFeature = ladFeatures.find(f => f.properties?.LAD25CD === ladCode || f.properties?.LAD24CD === ladCode);
-            console.log('Matched LAD feature:', ladFeature);
-
-            if (ladFeature && ladFeature.properties) {
-                const years = Array.from({ length: 15 }, (_, i) => i + 2010);
-                const chartData = years.map(y => ({
-                    year: y,
-                    price: ladFeature.properties?.[`priceper_median_${y}`] || null
-                })).filter(d => d.price !== null) as { year: number; price: number }[];
-
-                setSelectedArea({
-                    name: `LAD: ${ladFeature.properties.LAD25NM || ladFeature.properties.LAD24NM}`,
-                    isMSOA: false,
-                    ladCode: ladFeature.properties.LAD25CD || ladFeature.properties.LAD24CD,
-                    ladName: ladFeature.properties.LAD25NM || ladFeature.properties.LAD24NM,
-                    chartData: chartData,
-                    properties: ladFeature.properties,
-                    selectedYearData: {
-                        priceper_median: ladFeature.properties?.[`priceper_median_${year}`],
-                        priceper_mean: ladFeature.properties?.[`priceper_mean_${year}`],
-                        priceper_count: ladFeature.properties?.[`priceper_count_${year}`],
-                        year: year
-                    },
-                    mostRecentYearData: {
-                        priceper_median: ladFeature.properties?.[`priceper_median_2024`],
-                        priceper_mean: ladFeature.properties?.[`priceper_mean_2024`],
-                        priceper_count: ladFeature.properties?.[`priceper_count_2024`],
-                        price_mean: ladFeature.properties?.[`price_mean_2024`],
-                        price_median: ladFeature.properties?.[`price_median_2024`],
-                        tfarea_mean: ladFeature.properties?.[`tfarea_mean_2024`],
-                        tfarea_median: ladFeature.properties?.[`tfarea_median_2024`],
-                        year: 2024
-                    }
-                });
-
-                // Zoom to the feature
-                if (ladFeature.geometry && ladFeature.geometry.type === 'Polygon') {
-                    const coordinates = ladFeature.geometry.coordinates[0];
-                    const bounds = coordinates.reduce((bounds: mapboxgl.LngLatBounds, coord: number[]) => {
-                        return bounds.extend(coord as [number, number]);
-                    }, new mapboxgl.LngLatBounds(coordinates[0] as [number, number], coordinates[0] as [number, number]));
-
-                    map.current.fitBounds(bounds, {
-                        padding: 50,
-                        maxZoom: 12
-                    });
-                }
-            }
-        }
-    }, [searchParams, year]);
-
-    // function updateOpacity(map: Map) {
-    //     console.log(map.getPaintProperty('msoa', 'fill-opacity'))
-    //     map.setPaintProperty('msoa copy', 'fill-opacity', [
-    //         "interpolate",
-    //         ["linear"],
-    //         ["zoom"],
-    //         8, 0,
-    //         8.5,opacity
-    //     ]);
-    //     map.setPaintProperty('psqm-sales-lad-24-byyear', 'fill-opacity', [
-    //         "interpolate",
-    //         ["linear"],
-    //         ["zoom"],
-    //         8, opacity,
-    //         8.5, 0
-    //     ]);
-    // }
 
     useEffect(mapEffect(map, setPsqmFilter), [minPrice, maxPrice, year]);
     useEffect(mapEffect(map, activateYear), [year]);
@@ -261,12 +182,19 @@ function PerSquareMetreMapOverTime() {
         <MapPage
             styleUrl='mapbox://styles/freddie-yimby/cmhasxe7s000k01qzhh70hlsv'
             map={map}
-            mapOpts={{
-                center: [-0.1276, 51.5074],
-                zoom: 10,
-                maxZoom: 13.9,
-                minZoom: 6
-            }}
+            mapOpts={
+                searchParams.get('lad') ? {
+                    bounds: [[-6.5, 49.8], [2.0, 59.0]],
+                    fitBoundsOptions: { padding: 20 },
+                    maxZoom: 13.9,
+                    minZoom: 6
+                } : {
+                    center: [-0.1276, 51.5074],
+                    zoom: 10,
+                    maxZoom: 13.9,
+                    minZoom: 6
+                }
+            }
             attributionControl={
                 new mapboxgl.AttributionControl({
                     customAttribution: [
@@ -278,118 +206,85 @@ function PerSquareMetreMapOverTime() {
             }
             onClick={onClick}
             onLoad={() => {
-                console.log('=== SALES MAP LOADED ===');
                 setPsqmFilter(map.current!);
-                // updateOpacity(map.current!);
 
-                if (!map.current) return;
+                if (!ENABLE_CROSS_LINKING || !map.current) return;
 
-                // Wait for the style to be fully loaded before querying features
                 const handleStyleLoad = () => {
-                    console.log('=== SALES MAP STYLE LOADED ===');
                     const ladCode = searchParams.get('lad');
-                    console.log('URL parameter lad:', ladCode);
+                    if (!ladCode || !map.current) return;
 
-                    if (ladCode && map.current) {
-                        console.log('Map loaded, looking for LAD:', ladCode);
-                        console.log('Map style loaded:', map.current.isStyleLoaded());
+                    const sourceFeatures = map.current.querySourceFeatures('composite', {
+                        sourceLayer: 'psqm-sales-lad-24-byyear'
+                    });
 
-                        // Log available layers
-                        const style = map.current.getStyle();
-                        console.log('Available layers:', style?.layers?.map(l => l.id));
-                        console.log('Available sources:', Object.keys(style?.sources || {}));
+                    const ladFeature = sourceFeatures.find(f =>
+                        f.properties?.LAD25CD === ladCode || f.properties?.LAD24CD === ladCode
+                    );
 
-                        // Try queryRenderedFeatures instead which gets visible features
-                        const allFeatures = map.current.queryRenderedFeatures();
-                        console.log('Total rendered features:', allFeatures.length);
-
-                        // Get LAD layer features specifically
-                        const ladLayerFeatures = allFeatures.filter(f =>
-                            f.sourceLayer === 'psqm-sales-lad-24-byyear-afo4fj' ||
-                            f.sourceLayer === 'psqm-sales-msoa-24-byyear-azdvqh' ||
-                            f.layer?.id?.includes('sales') ||
-                            f.properties?.LAD25CD ||
-                            f.properties?.LAD24CD
-                        );
-                        console.log('LAD/MSOA layer features:', ladLayerFeatures.length);
-
-                        if (ladLayerFeatures.length > 0) {
-                            console.log('Sample codes from rendered features:', ladLayerFeatures.slice(0, 10).map(f => ({
-                                code25: f.properties?.LAD25CD,
-                                code24: f.properties?.LAD24CD,
-                                name25: f.properties?.LAD25NM,
-                                name24: f.properties?.LAD24NM,
-                                layer: f.layer?.id,
-                                sourceLayer: f.sourceLayer
-                            })));
-                        }
-
-                        // Search for the LAD code
-                        console.log('Searching for LAD code:', ladCode);
-                        const matchingFeatures = ladLayerFeatures.filter(f => {
-                            const matches = f.properties?.LAD25CD === ladCode || f.properties?.LAD24CD === ladCode;
-                            if (matches) {
-                                console.log('FOUND MATCH!', f.properties?.LAD25CD || f.properties?.LAD24CD, f.properties?.LAD25NM || f.properties?.LAD24NM);
-                            }
-                            return matches;
+                    if (!ladFeature || !ladFeature.properties) {
+                        toast({
+                            title: "Area not found",
+                            description: `Could not find sales data for LAD code: ${ladCode}`,
+                            variant: "destructive",
                         });
-                        console.log('Number of matching features:', matchingFeatures.length);
+                        return;
+                    }
 
-                        const ladFeature = matchingFeatures[0];
-                        console.log('Matched LAD feature:', ladFeature);
+                    const years = Array.from({ length: 15 }, (_, i) => i + 2010);
+                    const chartData = years.map(y => ({
+                        year: y,
+                        price: ladFeature.properties?.[`priceper_median_${y}`] || null
+                    })).filter(d => d.price !== null) as { year: number; price: number }[];
 
-                        if (ladFeature && ladFeature.properties) {
-                            console.log('Setting selected area for:', ladFeature.properties.LAD25NM || ladFeature.properties.LAD24NM);
-                            const years = Array.from({ length: 15 }, (_, i) => i + 2010);
-                            const chartData = years.map(y => ({
-                                year: y,
-                                price: ladFeature.properties?.[`priceper_median_${y}`] || null
-                            })).filter(d => d.price !== null) as { year: number; price: number }[];
-
-                            setSelectedArea({
-                                name: `LAD: ${ladFeature.properties.LAD25NM || ladFeature.properties.LAD24NM}`,
-                                isMSOA: false,
-                                ladCode: ladFeature.properties.LAD25CD || ladFeature.properties.LAD24CD,
-                                ladName: ladFeature.properties.LAD25NM || ladFeature.properties.LAD24NM,
-                                chartData: chartData,
-                                properties: ladFeature.properties,
-                                selectedYearData: {
-                                    priceper_median: ladFeature.properties?.[`priceper_median_${year}`],
-                                    priceper_mean: ladFeature.properties?.[`priceper_mean_${year}`],
-                                    priceper_count: ladFeature.properties?.[`priceper_count_${year}`],
-                                    year: year
-                                },
-                                mostRecentYearData: {
-                                    priceper_median: ladFeature.properties?.[`priceper_median_2024`],
-                                    priceper_mean: ladFeature.properties?.[`priceper_mean_2024`],
-                                    priceper_count: ladFeature.properties?.[`priceper_count_2024`],
-                                    price_mean: ladFeature.properties?.[`price_mean_2024`],
-                                    price_median: ladFeature.properties?.[`price_median_2024`],
-                                    tfarea_mean: ladFeature.properties?.[`tfarea_mean_2024`],
-                                    tfarea_median: ladFeature.properties?.[`tfarea_median_2024`],
-                                    year: 2024
-                                }
-                            });
-
-                            // Zoom to the feature
-                            if (ladFeature.geometry && ladFeature.geometry.type === 'Polygon') {
-                                console.log('Zooming to feature bounds');
-                                const coordinates = ladFeature.geometry.coordinates[0];
-                                const bounds = coordinates.reduce((bounds: mapboxgl.LngLatBounds, coord: number[]) => {
-                                    return bounds.extend(coord as [number, number]);
-                                }, new mapboxgl.LngLatBounds(coordinates[0] as [number, number], coordinates[0] as [number, number]));
-
-                                map.current.fitBounds(bounds, {
-                                    padding: 50,
-                                    maxZoom: 12
-                                });
-                            }
-                        } else {
-                            console.error('No matching feature found for LAD code:', ladCode);
+                    setSelectedArea({
+                        name: `LAD: ${ladFeature.properties.LAD25NM || ladFeature.properties.LAD24NM}`,
+                        isMSOA: false,
+                        ladCode: ladFeature.properties.LAD25CD || ladFeature.properties.LAD24CD,
+                        ladName: ladFeature.properties.LAD25NM || ladFeature.properties.LAD24NM,
+                        chartData: chartData,
+                        properties: ladFeature.properties,
+                        selectedYearData: {
+                            priceper_median: ladFeature.properties?.[`priceper_median_${year}`],
+                            priceper_mean: ladFeature.properties?.[`priceper_mean_${year}`],
+                            priceper_count: ladFeature.properties?.[`priceper_count_${year}`],
+                            year: year
+                        },
+                        mostRecentYearData: {
+                            priceper_median: ladFeature.properties?.[`priceper_median_2024`],
+                            priceper_mean: ladFeature.properties?.[`priceper_mean_2024`],
+                            priceper_count: ladFeature.properties?.[`priceper_count_2024`],
+                            price_mean: ladFeature.properties?.[`price_mean_2024`],
+                            price_median: ladFeature.properties?.[`price_median_2024`],
+                            tfarea_mean: ladFeature.properties?.[`tfarea_mean_2024`],
+                            tfarea_median: ladFeature.properties?.[`tfarea_median_2024`],
+                            year: 2024
                         }
-                    } else {
-                        if (!ladCode) console.log('No LAD parameter in URL');
-                        if (!map.current) console.error('Map not initialized');
+                    });
+
+                    // Zoom to the feature
+                    if (ladFeature.geometry) {
+                        let bounds = new mapboxgl.LngLatBounds();
+
+                        if (ladFeature.geometry.type === 'Polygon') {
+                            const coordinates = ladFeature.geometry.coordinates[0];
+                            coordinates.forEach((coord: number[]) => {
+                                bounds.extend(coord as [number, number]);
+                            });
+                        } else if (ladFeature.geometry.type === 'MultiPolygon') {
+                            ladFeature.geometry.coordinates.forEach((polygon: number[][][]) => {
+                                polygon[0].forEach((coord: number[]) => {
+                                    bounds.extend(coord as [number, number]);
+                                });
+                            });
+                        }
+
+                        if (!bounds.isEmpty()) {
+                            map.current!.fitBounds(bounds, {
+                                padding: 50,
+                                maxZoom: 10
+                            });
+                        }
                     }
                 };
 
@@ -567,6 +462,17 @@ function PerSquareMetreMapOverTime() {
                                 </LineChart>
                             </ResponsiveContainer>
 
+                            {ENABLE_CROSS_LINKING && selectedArea.ladCode && (
+                                <div className="mt-3">
+                                    <a
+                                        href={`/psqm-rents?lad=${selectedArea.ladCode}`}
+                                        className="block w-full p-3 bg-blue-600 text-white text-center rounded font-semibold hover:bg-blue-700 transition-colors no-underline"
+                                    >
+                                        View rental prices for {selectedArea.isMSOA ? selectedArea.ladName : selectedArea.name.replace('LAD: ', '')} →
+                                    </a>
+                                </div>
+                            )}
+
                             <div className="mt-3 border-t pt-3">
                                 <div className="flex justify-between items-center mb-2">
                                     <p className="font-semibold text-base">Data by Year</p>
@@ -639,17 +545,6 @@ function PerSquareMetreMapOverTime() {
                                                 </>
                                             )}
                                         </div>
-                                    </div>
-                                )}
-
-                                {selectedArea.ladCode && (
-                                    <div className="border-t pt-3 mt-3">
-                                        <a
-                                            href={`/psqm-rents?lad=${selectedArea.ladCode}`}
-                                            className="block w-full p-3 bg-blue-600 text-white text-center rounded font-semibold hover:bg-blue-700 transition-colors no-underline"
-                                        >
-                                            View rental prices for {selectedArea.isMSOA ? selectedArea.ladName : selectedArea.name.replace('LAD: ', '')} →
-                                        </a>
                                     </div>
                                 )}
                             </div>

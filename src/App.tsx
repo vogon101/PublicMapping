@@ -10,6 +10,7 @@ import { YAMLEssay } from './pages/Essay'
 import GBStationsMap from './pages/GBStationsMap'
 import RentsPerSquareMetreMap from './pages/RentsPerSquareMetreMap'
 import PerSquareMetreMapOverTime from './pages/PerSquareMetreMapOverTime'
+import { Toaster } from './components/ui/toaster'
 
 function App() {
   
@@ -55,6 +56,7 @@ function App() {
   return (
     <div className="App">
       <RouterProvider router={router} />
+      <Toaster />
     </div>
   )
 }
