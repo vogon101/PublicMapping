@@ -13,6 +13,8 @@ export interface MapPageProps {
         maxZoom?: number
         minZoom?: number
         center?: [number, number]
+        bounds?: [[number, number], [number, number]]
+        fitBoundsOptions?: mapboxgl.FitBoundsOptions
     }
     attributionControl?: mapboxgl.AttributionControl,
     onClick?: (event: mapboxgl.MapMouseEvent) => void,
@@ -29,12 +31,18 @@ export default function MapPage ({styleUrl, map, mapOpts, attributionControl, on
     function initialiseMap() {
         if (map.current) return;
         if (mapContainer.current) {
+            const { bounds, fitBoundsOptions, ...otherMapOpts } = mapOpts || {};
+
             map.current = new mapboxgl.Map({
                 container: mapContainer.current,
                 style: styleUrl,
                 attributionControl: attributionControl == undefined,
-                ...mapOpts
+                ...otherMapOpts
             })
+
+            if (bounds) {
+                map.current.fitBounds(bounds, fitBoundsOptions);
+            }
 
             if (attributionControl)
                 map.current.addControl(attributionControl)

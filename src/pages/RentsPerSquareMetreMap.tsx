@@ -1,6 +1,6 @@
 import mapboxgl from "mapbox-gl";
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import logoImage from '../assets/logo_colour_tight.png';
 import MapPage from '../components/MapPage';
@@ -80,8 +80,6 @@ function RentsPerSquareMetreMap() {
                     const ladCode = searchParams.get('lad');
                     if (!ladCode || !map.current) return;
 
-
-                    console.log(map.current.getStyle().layers)
                     const sourceFeatures = map.current.querySourceFeatures('composite', {
                         sourceLayer: 'psqm-rents'
                     });
