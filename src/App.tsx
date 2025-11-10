@@ -10,7 +10,6 @@ import { YAMLEssay } from './pages/Essay'
 import GBStationsMap from './pages/GBStationsMap'
 import RentsPerSquareMetreMap from './pages/RentsPerSquareMetreMap'
 import PerSquareMetreMapOverTime from './pages/PerSquareMetreMapOverTime'
-import CrossrailMapPage from './pages/CrossrailMapPage'
 
 function App() {
   
@@ -51,10 +50,6 @@ function App() {
       path: '/psqm-over-time',
       element: <PerSquareMetreMapOverTime />,
     },
-    {
-      path: '/crossrail',
-      element: <CrossrailMapPage />,
-    }
   ])
 
   return (
