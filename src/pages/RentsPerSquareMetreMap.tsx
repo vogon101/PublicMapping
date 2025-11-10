@@ -1,16 +1,24 @@
 import mapboxgl from "mapbox-gl";
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import logoImage from '../assets/logo_colour_tight.png';
 import MapPage from '../components/MapPage';
 
 const mapbox_token = import.meta.env.VITE_APP_MAPBOX_TOKEN
 mapboxgl.accessToken = mapbox_token
 
+interface AreaData {
+    name: string;
+    cpm2_overall: number;
+    cpm2_1: number;
+    cpm2_2: number;
+    cpm2_3: number;
+}
+
 function RentsPerSquareMetreMap() {
 
     const map = useRef<mapboxgl.Map | null>(null);
-    const popup = useRef<mapboxgl.Popup | null>(null);
+    const [selectedArea, setSelectedArea] = useState<AreaData | null>(null);
 
     function onClick(event: mapboxgl.MapMouseEvent) {
         if (!map.current) return;
@@ -19,24 +27,14 @@ function RentsPerSquareMetreMap() {
             const feature = features[0];
             console.log(feature)
             console.log(feature.properties)
-            const html = `
-                <div>
-                    <h3><b>${feature.properties?.LAD25NM}</b></h3>
-                    <p>
-                        Median rent per sqm: £${feature.properties?.cpm2_overall.toFixed(2)}
-                    </p>
-                    <p>
-                        1 bed average rent per sqm: £${feature.properties?.cpm2_1.toFixed(2)}
-                    </p>
-                    <p>
-                        2 bed average rent per sqm: £${feature.properties?.cpm2_2.toFixed(2)}
-                    </p>
-                </div>
-            `
-            popup.current = new mapboxgl.Popup({
-                closeButton: true,
-                closeOnClick: true,
-            }).setLngLat(event.lngLat).setHTML(html).addTo(map.current);
+
+            setSelectedArea({
+                name: feature.properties?.LAD25NM || 'Unknown Area',
+                cpm2_overall: feature.properties?.cpm2_overall || 0,
+                cpm2_1: feature.properties?.cpm2_1 || 0,
+                cpm2_2: feature.properties?.cpm2_2 || 0,
+                cpm2_3: feature.properties?.cpm2_3 || 0
+            });
         }
     }
 
@@ -64,6 +62,52 @@ function RentsPerSquareMetreMap() {
             }}
         >
             <img src={logoImage} alt="Logo" className="absolute top-2.5 right-2.5 max-w-[50%] max-h-[8vh] opacity-40 z-[1000] transition-all duration-300 ease-in-out rounded-[10px] p-[2vh] bg-white md:bottom-10 md:left-2.5 md:top-auto md:right-auto md:max-w-[30%]" />
+
+            {/* Slide-in panel */}
+            {selectedArea && (
+                <>
+                    {/* Panel */}
+                    <div className="fixed bottom-0 left-0 right-0 max-h-[60vh] md:bottom-auto md:top-0 md:right-0 md:left-auto md:w-[400px] md:h-auto md:max-h-full bg-white z-[1002] shadow-xl animate-slide-up md:animate-slide-left overflow-y-auto">
+                        <div className="sticky top-0 bg-white z-10 p-5 pb-3 border-b shadow-sm">
+                            <div className="flex justify-between items-start">
+                                <h3 className="text-lg font-bold m-0">{selectedArea.name}</h3>
+                                <button
+                                    onClick={() => setSelectedArea(null)}
+                                    className="bg-transparent border-none text-2xl cursor-pointer p-0 leading-none hover:opacity-70"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        </div>
+                        <div className="p-5 pt-3">
+                            <div className="space-y-3">
+                                <div className="p-3 bg-gray-50 rounded">
+                                    <p className="text-sm text-gray-600 m-0 mb-1">Median rent per m<sup>2</sup> per month</p>
+                                    <p className="text-2xl font-bold m-0">£{selectedArea.cpm2_overall.toFixed(2)}/m<sup>2</sup>/mo</p>
+                                </div>
+
+                                <div className="border-t pt-3">
+                                    <p className="font-semibold text-base mb-2">By Bedroom Count</p>
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                                            <span className="text-sm font-medium">1 bed average</span>
+                                            <span className="text-base font-bold">£{selectedArea.cpm2_1.toFixed(2)}/m<sup>2</sup>/mo</span>
+                                        </div>
+                                        <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                                            <span className="text-sm font-medium">2 bed average</span>
+                                            <span className="text-base font-bold">£{selectedArea.cpm2_2.toFixed(2)}/m<sup>2</sup>/mo</span>
+                                        </div>
+                                        <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                                            <span className="text-sm font-medium">3 bed average</span>
+                                            <span className="text-base font-bold">£{selectedArea.cpm2_3.toFixed(2)}/m<sup>2</sup>/mo</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
         </MapPage>
     )
 }
