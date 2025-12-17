@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import psqmThumbnail from "../assets/Pricemap.png";
-import psqmRentThumbnail from "../assets/Rentmap.png";
+import psqmRentThumbnail from "../assets/rentmap2.png";
 // import greenBeltThumbnail from "../assets/GBMap.png";
 
 function Home() {
