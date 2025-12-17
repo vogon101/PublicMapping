@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import psqmThumbnail from "../assets/Pricemap.png";
-// import psqmRentThumbnail from "../assets/Rentmap.png";
+import psqmRentThumbnail from "../assets/Rentmap.png";
 // import greenBeltThumbnail from "../assets/GBMap.png";
 
 function Home() {
@@ -22,15 +22,21 @@ function Home() {
                         </p>
                     </div>
                 </Link>
-                {/* <Link to="/psqm-rents" className="map-list-item">
-                    <img src={psqmRentThumbnail} alt="House prices per square metre" className="map-thumbnail" />
-                    <div className="map-description">
+                <Link to="/psqm-rents" className="flex flex-col items-center md:flex-row md:items-start p-5 my-5 border border-black rounded no-underline text-inherit transition-all duration-300 ease-in-out hover:bg-gray-100 hover:scale-[1.02] w-[calc(100%-40px)] max-w-[850px]">
+                    <img src={psqmRentThumbnail} alt="House prices per square metre" className="self-center w-full md:w-[300px] md:h-[200px] max-w-[300px] h-auto object-cover mb-[5px] md:mr-[5px] md:mb-0 rounded shadow-md" />
+                    <div className="flex flex-col items-center md:items-start text-center md:text-left w-full ml-5">
                         <h2>2025 rents per square metre</h2>
                         <p>
-                        
+                        If you rent, you probably don’t think in square metres. You think about how many bedrooms and space you can actually get for your monthly budget.
+                        </p>
+                        <p>
+                        Take £1,500 a month. In parts of the North East or Wales, that might comfortably cover a three-bedroom flat. In Westminster or Kensington, it may barely stretch to a small one-bed. The cost is the same; the amount of space is not.
+                        </p>
+                        <p>
+                        We've built a new dataset and interactive map of median rent per square metre for every local authority in England and Wales. It lets us see something that usually stays hidden behind headline rents: the local price of space.
                         </p>
                     </div>
-                </Link> */}
+                </Link>
                 {/* Hidden until launch */}
                 {/* <Link to="/green-belt-election" className="map-list-item">
                     <img src={greenBeltThumbnail} alt="Green Belt election map" className="map-thumbnail" />

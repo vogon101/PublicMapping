@@ -10,7 +10,7 @@ const mapbox_token = import.meta.env.VITE_APP_MAPBOX_TOKEN
 mapboxgl.accessToken = mapbox_token
 
 // Feature flag to enable cross-linking between maps
-const ENABLE_CROSS_LINKING = true;
+const ENABLE_CROSS_LINKING = false;
 
 interface AreaData {
     name: string;
