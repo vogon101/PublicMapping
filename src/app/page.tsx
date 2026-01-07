@@ -27,7 +27,7 @@ function MapCard({ href, imageSrc, imageAlt, title, description, tag }: MapCardP
             className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent" />
-          <Badge className="absolute top-4 left-4 bg-primary hover:bg-primary text-primary-foreground shadow-md">
+          <Badge className="absolute top-4 left-4 bg-primary hover:bg-primary text-primary-foreground shadow-md text-sm px-3 py-1">
             {tag}
           </Badge>
         </div>

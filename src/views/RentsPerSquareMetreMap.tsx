@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import MapPage from "@/components/MapPage";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 // Feature flag to enable cross-linking between maps
 const ENABLE_CROSS_LINKING = false;
@@ -139,6 +140,9 @@ function RentsPerSquareMetreMap() {
             }}
         >
             <Image src="/logo_colour_tight.png" alt="Logo" width={200} height={50} className="absolute top-2.5 right-2.5 max-w-[50%] max-h-[8vh] h-auto w-auto object-contain opacity-40 z-[1000] transition-all duration-300 ease-in-out rounded-[10px] p-[2vh] bg-white md:bottom-10 md:left-2.5 md:top-auto md:right-auto md:max-w-[30%]" />
+            <Badge className="absolute bottom-2.5 right-2.5 md:bottom-auto md:top-2.5 md:right-2.5 z-[1000] bg-primary text-primary-foreground shadow-md text-sm px-3 py-1">
+                2025 Data
+            </Badge>
 
             {/* Slide-in panel */}
             {selectedArea && (
