@@ -8,6 +8,8 @@ import Image from "next/image";
 import MapPage from "@/components/MapPage";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Info } from "lucide-react";
 
 // Feature flag to enable cross-linking between maps
 const ENABLE_CROSS_LINKING = false;
@@ -140,9 +142,47 @@ function RentsPerSquareMetreMap() {
             }}
         >
             <Image src="/logo_colour_tight.png" alt="Logo" width={200} height={50} className="absolute top-2.5 right-2.5 max-w-[50%] max-h-[8vh] h-auto w-auto object-contain opacity-40 z-[1000] transition-all duration-300 ease-in-out rounded-[10px] p-[2vh] bg-white md:bottom-10 md:left-2.5 md:top-auto md:right-auto md:max-w-[30%]" />
-            <Badge className="absolute bottom-2.5 right-2.5 md:bottom-auto md:top-2.5 md:right-2.5 z-[1000] bg-primary text-primary-foreground shadow-md text-sm px-3 py-1">
-                2025 Data
-            </Badge>
+            <Popover>
+                <PopoverTrigger asChild>
+                    <Badge className="absolute bottom-2.5 right-2.5 md:bottom-auto md:top-2.5 md:right-2.5 z-[1000] bg-primary text-primary-foreground shadow-md text-base px-4 py-1.5 cursor-pointer hover:bg-primary/90 transition-colors">
+                        <Info className="w-4 h-4 mr-1.5" />
+                        2025 Data
+                    </Badge>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 z-[1001]" side="bottom" align="end">
+                    <div className="space-y-3">
+                        <h4 className="font-bold text-base">Data Sources & Methodology</h4>
+                        <div className="space-y-2 text-sm">
+                            <div>
+                                <p className="font-semibold text-foreground">Private Rent Data</p>
+                                <p className="text-muted-foreground">ONS Private Rent & House Prices bulletin (September 2025)</p>
+                            </div>
+                            <div>
+                                <p className="font-semibold text-foreground">Property Size Data</p>
+                                <p className="text-muted-foreground">Energy Performance Certificate (EPC) data from Open Data Communities</p>
+                            </div>
+                            <div>
+                                <p className="font-semibold text-foreground">Property Stock</p>
+                                <p className="text-muted-foreground">Council Tax Stock of Properties (2024)</p>
+                            </div>
+                            <div>
+                                <p className="font-semibold text-foreground">Boundaries</p>
+                                <p className="text-muted-foreground">Local Authority boundaries from ONS Geoportal (May 2024)</p>
+                            </div>
+                        </div>
+                        <div className="pt-2 border-t">
+                            <a
+                                href="https://github.com/thicknavyrain/rents_per_sq_ft_uk"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-primary hover:underline font-medium"
+                            >
+                                View full methodology on GitHub →
+                            </a>
+                        </div>
+                    </div>
+                </PopoverContent>
+            </Popover>
 
             {/* Slide-in panel */}
             {selectedArea && (
