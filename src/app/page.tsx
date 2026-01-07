@@ -57,7 +57,7 @@ function MapCard({ href, imageSrc, imageAlt, title, description, tag }: MapCardP
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-secondary to-background">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-secondary to-background">
       {/* Hero Section */}
       <header className="relative overflow-hidden">
         {/* Background pattern */}
@@ -76,7 +76,7 @@ export default function Home() {
               alt="YIMBY Alliance"
               width={200}
               height={60}
-              className="h-12 sm:h-14 w-auto"
+              className="h-12 sm:h-14 w-auto mix-blend-multiply"
               priority
             />
           </div>
@@ -96,7 +96,7 @@ export default function Home() {
       </header>
 
       {/* Maps Section */}
-      <main className="max-w-5xl mx-auto px-6 pb-20">
+      <main className="flex-grow max-w-5xl mx-auto px-6 pb-20 w-full">
         <div className="grid md:grid-cols-2 gap-8">
           <MapCard
             href="/psqm"
@@ -118,7 +118,7 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card/50">
+      <footer className="mt-auto border-t border-border bg-card/50">
         <div className="max-w-5xl mx-auto px-6 py-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <Image
@@ -126,7 +126,7 @@ export default function Home() {
               alt="YIMBY Alliance"
               width={100}
               height={30}
-              className="h-6 w-auto opacity-60"
+              className="h-6 w-auto opacity-60 mix-blend-multiply"
             />
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <a
