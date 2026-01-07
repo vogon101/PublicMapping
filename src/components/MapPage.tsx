@@ -1,8 +1,11 @@
+"use client";
+
 import mapboxgl, { Map } from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
 import React, { EffectCallback, ReactNode, useEffect, useRef } from "react";
 
-const mapbox_token = import.meta.env.VITE_APP_MAPBOX_TOKEN
-mapboxgl.accessToken = mapbox_token
+const mapbox_token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
+mapboxgl.accessToken = mapbox_token;
 
 
 export interface MapPageProps {

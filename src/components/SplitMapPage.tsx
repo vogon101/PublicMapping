@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState, useRef } from "react"
 import MapPage, { MapPageProps } from "./MapPage"
 import syncMaps from "../utils/syncMaps";

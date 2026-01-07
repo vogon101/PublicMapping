@@ -1,4 +1,7 @@
+"use client";
+
 import { useRef } from "react";
+import mapboxgl from "mapbox-gl";
 import MapPage from "./MapPage";
 
 export default function EmbededMap({ mapboxStyle }: { mapboxStyle: string }) {
