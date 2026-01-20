@@ -17,7 +17,7 @@ interface MapCardProps {
 function MapCard({ href, imageSrc, imageAlt, title, description, tag }: MapCardProps) {
   return (
     <Link href={href} className="group block">
-      <Card className="overflow-hidden border-2 hover:border-primary hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full">
+      <Card className="overflow-hidden border-2 hover:border-primary hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
         {/* Image */}
         <div className="relative h-52 sm:h-56 overflow-hidden">
           <Image
@@ -38,14 +38,14 @@ function MapCard({ href, imageSrc, imageAlt, title, description, tag }: MapCardP
           </CardTitle>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="flex-grow">
           <CardDescription className="text-base leading-relaxed">
             {description}
           </CardDescription>
         </CardContent>
 
-        <CardFooter>
-          <Button variant="ghost" className="p-0 h-auto text-primary font-bold group-hover:text-accent">
+        <CardFooter className="mt-auto">
+          <Button variant="ghost" className="p-0 h-auto text-primary font-bold group-hover:text-accent group-hover:px-3 group-hover:py-1 transition-all">
             Explore map
             <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-2 transition-transform" />
           </Button>
@@ -99,12 +99,12 @@ export default function Home() {
       <main className="flex-grow max-w-5xl mx-auto px-6 pb-20 w-full">
         <div className="grid md:grid-cols-2 gap-8">
           <MapCard
-            href="/psqm"
-            imageSrc="/Pricemap.png"
+            href="/psqm-over-time"
+            imageSrc="/pricemap2.jpeg"
             imageAlt="House prices per square metre map"
             title="House prices per square metre"
-            tag="2023 Data"
-            description="The average home in London costs £520,000 whilst in the North East it's £160,000 — but the London property is likely much smaller. This map shows what really matters: how much space you get for your money."
+            tag="2010-2024 Data"
+            description="Explore 15 years of house price data across England and Wales. See how prices per square metre have changed since 2010, with CPI-adjusted real prices and detailed statistics for every area."
           />
           <MapCard
             href="/psqm-rents"

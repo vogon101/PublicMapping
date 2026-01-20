@@ -8,9 +8,12 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianG
 import Image from "next/image";
 import MapPage, { mapEffect } from "@/components/MapPage";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Info } from "lucide-react";
 
 // Feature flag to enable cross-linking between maps
-const ENABLE_CROSS_LINKING = true;
+const ENABLE_CROSS_LINKING = false;
 
 interface AreaData {
     name: string;
@@ -71,7 +74,7 @@ function PerSquareMetreMapOverTime() {
     const map = useRef<mapboxgl.Map | null>(null);
     const [minPrice, setMinPrice] = useState<number>(0);
     const [maxPrice, setMaxPrice] = useState<number>(100000);
-    const [showSliders, setShowSliders] = useState<boolean>(true);
+    const [showSliders, setShowSliders] = useState<boolean>(false);
     const [year, setYear] = useState<number>(2024);
     const [selectedArea, setSelectedArea] = useState<AreaData | null>(null);
     const [showNominal, setShowNominal] = useState<boolean>(true);
@@ -295,52 +298,96 @@ function PerSquareMetreMapOverTime() {
             }}
         >
             <Image src="/logo_colour_tight.png" alt="Logo" width={200} height={50} className="absolute bottom-2.5 left-2.5 max-w-[30%] max-h-[8vh] opacity-40 z-[1000] transition-all duration-300 ease-in-out rounded-[10px] p-[2vh] bg-white" />
-            <div className={`absolute top-2.5 left-2.5 z-[1000] bg-white rounded-[5px] shadow-[0_2px_4px_rgba(0,0,0,0.1)] max-w-[300px] max-[450px]:w-[calc(100vw-20px)] max-[450px]:left-2.5 max-[450px]:right-2.5 ${showSliders ? 'p-2.5 max-[450px]:p-[5px]' : 'py-1.5 px-2.5 max-[450px]:py-1 max-[450px]:px-[5px]'}`}>
-                <div className="flex justify-between items-center">
-                    <h3 className={showSliders ? "m-0" : "m-0 text-base"}>Controls</h3>
-                    <button className="bg-transparent border-none text-lg cursor-pointer p-[5px] text-[#333] transition-opacity duration-300 hover:opacity-70" onClick={() => setShowSliders(!showSliders)}>
-                        {showSliders ? '▼' : '▶'}
-                    </button>
+            {searchParams.get('simple') !== 'true' && (
+                <div className={`absolute top-2.5 left-2.5 z-[1000] bg-white rounded-[5px] shadow-[0_2px_4px_rgba(0,0,0,0.1)] max-w-[300px] max-[450px]:w-[calc(100vw-20px)] max-[450px]:left-2.5 max-[450px]:right-2.5 ${showSliders ? 'p-2.5 max-[450px]:p-[5px]' : 'py-1.5 px-2.5 max-[450px]:py-1 max-[450px]:px-[5px]'}`}>
+                    <div className="flex justify-between items-center">
+                        <h3 className={showSliders ? "m-0" : "m-0 text-base"}>Controls</h3>
+                        <button className="bg-transparent border-none text-lg cursor-pointer p-[5px] text-[#333] transition-opacity duration-300 hover:opacity-70" onClick={() => setShowSliders(!showSliders)}>
+                            {showSliders ? '▼' : '▶'}
+                        </button>
+                    </div>
+                    {showSliders && (
+                        <>
+                            <div className="flex justify-between items-center mb-2.5">
+                                <label className="max-w-[40%] flex-[1_0_100px] mr-2.5">
+                                    <b>Min Price:</b><br />£{minPrice}
+                                </label>
+                                <input type="range" className="flex-1" min="0" max="10000" step="500" value={minPrice} onChange={(e) => {
+                                    const newMinPrice = Number(e.target.value);
+                                    setMinPrice(newMinPrice);
+                                    if (newMinPrice > maxPrice) {
+                                        setMaxPrice(newMinPrice * 1.1);
+                                    }
+                                }} />
+                            </div>
+                            <div className="flex justify-between items-center mb-2.5">
+                                <label className="max-w-[40%] flex-[1_0_100px] mr-2.5">
+                                    <b>Max Price:</b><br />£{maxPrice}
+                                </label>
+                                <input type="range" className="flex-1" min="0" max="30000" step="500" value={maxPrice} onChange={(e) => {
+                                    const newMaxPrice = Number(e.target.value);
+                                    setMaxPrice(newMaxPrice);
+                                    if (newMaxPrice < minPrice) {
+                                        setMinPrice(newMaxPrice * 0.9);
+                                    }
+                                }} />
+                            </div>
+                            <div className="flex justify-between items-center mb-2.5">
+                                <label className="max-w-[40%] flex-[1_0_100px] mr-2.5"><b>Year:</b></label>
+                                <select className="flex-1 px-2 py-1 border border-gray-300 rounded bg-white text-base" value={year} onChange={(e) => setYear(Number(e.target.value))}>
+                                    {[
+                                        ...Array.from({ length: 15 }, (_, i) => i + 2010).reverse().map((year) => (
+                                            <option value={year} key={year}>{year}</option>
+                                        ))
+                                    ]}
+                                </select>
+                            </div>
+                        </>
+                    )}
                 </div>
-                {showSliders && (
-                    <>
-                        <div className="flex justify-between items-center mb-2.5">
-                            <label className="max-w-[40%] flex-[1_0_100px] mr-2.5">
-                                <b>Min Price:</b><br />£{minPrice}
-                            </label>
-                            <input type="range" className="flex-1" min="0" max="10000" step="500" value={minPrice} onChange={(e) => {
-                                const newMinPrice = Number(e.target.value);
-                                setMinPrice(newMinPrice);
-                                if (newMinPrice > maxPrice) {
-                                    setMaxPrice(newMinPrice * 1.1);
-                                }
-                            }} />
+            )}
+
+            <Popover>
+                <PopoverTrigger asChild>
+                    <Badge className="absolute bottom-2.5 right-2.5 md:bottom-auto md:top-2.5 md:right-2.5 z-[1000] bg-primary text-primary-foreground shadow-md text-base px-4 py-1.5 cursor-pointer hover:bg-primary/90 transition-colors">
+                        <Info className="w-4 h-4 mr-1.5" />
+                        2010-2024 Data
+                    </Badge>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 z-[1001]" side="bottom" align="end">
+                    <div className="space-y-3">
+                        <h4 className="font-bold text-base">Data Sources & Methodology</h4>
+                        <div className="space-y-2 text-sm">
+                            <div>
+                                <p className="font-semibold text-foreground">Sales Price Data</p>
+                                <p className="text-muted-foreground">HM Land Registry Price Paid Data (2010-2024)</p>
+                            </div>
+                            <div>
+                                <p className="font-semibold text-foreground">Property Size Data</p>
+                                <p className="text-muted-foreground">Energy Performance Certificate (EPC) data from Open Data Communities</p>
+                            </div>
+                            <div>
+                                <p className="font-semibold text-foreground">Inflation Adjustment</p>
+                                <p className="text-muted-foreground">CPI-deflated prices using ONS CPIH series (2015=100, rebased to 2024)</p>
+                            </div>
+                            <div>
+                                <p className="font-semibold text-foreground">Boundaries</p>
+                                <p className="text-muted-foreground">MSOA and Local Authority boundaries from ONS Geoportal</p>
+                            </div>
                         </div>
-                        <div className="flex justify-between items-center mb-2.5">
-                            <label className="max-w-[40%] flex-[1_0_100px] mr-2.5">
-                                <b>Max Price:</b><br />£{maxPrice}
-                            </label>
-                            <input type="range" className="flex-1" min="0" max="30000" step="500" value={maxPrice} onChange={(e) => {
-                                const newMaxPrice = Number(e.target.value);
-                                setMaxPrice(newMaxPrice);
-                                if (newMaxPrice < minPrice) {
-                                    setMinPrice(newMaxPrice * 0.9);
-                                }
-                            }} />
+                        <div className="pt-2 border-t">
+                            <a
+                                href="https://doi.org/10.14324/111.444/ucloe.000019"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-primary hover:underline font-medium"
+                            >
+                                View UCL CASA methodology →
+                            </a>
                         </div>
-                        <div className="flex justify-between items-center mb-2.5">
-                            <label className="max-w-[40%] flex-[1_0_100px] mr-2.5"><b>Year:</b></label>
-                            <select className="flex-1 px-2 py-1 border border-gray-300 rounded bg-white text-base" value={year} onChange={(e) => setYear(Number(e.target.value))}>
-                                {[
-                                    ...Array.from({ length: 15 }, (_, i) => i + 2010).reverse().map((year) => (
-                                        <option value={year} key={year}>{year}</option>
-                                    ))
-                                ]}
-                            </select>
-                        </div>
-                    </>
-                )}
-            </div>
+                    </div>
+                </PopoverContent>
+            </Popover>
 
             {/* Slide-in panel for chart */}
             {selectedArea && (
