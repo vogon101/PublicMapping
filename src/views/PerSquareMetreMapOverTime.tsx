@@ -349,7 +349,7 @@ function PerSquareMetreMapOverTime() {
 
             <Popover>
                 <PopoverTrigger asChild>
-                    <Badge className="absolute bottom-2.5 right-2.5 md:bottom-auto md:top-2.5 md:right-2.5 z-[1000] bg-primary text-primary-foreground shadow-md text-base px-4 py-1.5 cursor-pointer hover:bg-primary/90 transition-colors">
+                    <Badge className="absolute top-2.5 right-2.5 z-[1000] bg-primary text-primary-foreground shadow-md text-base px-4 py-1.5 cursor-pointer hover:bg-primary/90 transition-colors">
                         <Info className="w-4 h-4 mr-1.5" />
                         2010-2024 Data
                     </Badge>
