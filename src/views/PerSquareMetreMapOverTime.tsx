@@ -297,7 +297,7 @@ function PerSquareMetreMapOverTime() {
                 }
             }}
         >
-            <Image src="/logo_colour_tight.png" alt="Logo" width={200} height={50} className="absolute bottom-12 left-2.5 xl:bottom-2.5 max-w-[30%] h-auto opacity-40 z-[1000] transition-all duration-300 ease-in-out rounded-[10px] p-[2vh] bg-white object-contain" />
+            <Image src="/logo_colour_tight.png" alt="Logo" width={200} height={50} className="absolute bottom-2.5 left-2.5 min-[600px]:bottom-12 xl:bottom-2.5 max-w-[30%] h-auto opacity-40 z-[1000] transition-all duration-300 ease-in-out rounded-[10px] p-[2vh] bg-white object-contain" />
             {searchParams.get('simple') !== 'true' && (
                 <div className={`absolute top-2.5 left-2.5 z-[1000] bg-white rounded-[5px] shadow-[0_2px_4px_rgba(0,0,0,0.1)] max-w-[300px] max-[450px]:w-[calc(100vw-20px)] max-[450px]:left-2.5 max-[450px]:right-2.5 ${showSliders ? 'p-2.5 max-[450px]:p-[5px]' : 'py-1.5 px-2.5 max-[450px]:py-1 max-[450px]:px-[5px]'}`}>
                     <div className="flex justify-between items-center">
