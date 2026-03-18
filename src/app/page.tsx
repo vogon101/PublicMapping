@@ -114,6 +114,14 @@ export default function Home() {
             tag="2025 Data"
             description="£1,500 a month might get you a three-bed in the North East or barely a studio in Kensington. This map reveals the local price of space for renters across England and Wales."
           />
+          <MapCard
+            href="/overcrowding"
+            imageSrc="/pricemap2.jpeg"
+            imageAlt="Overcrowding by constituency map"
+            title="Overcrowding by constituency"
+            tag="Census 2021"
+            description="Where are households most overcrowded? Explore Census 2021 data showing the percentage of homes with too few bedrooms across every constituency in England and Wales."
+          />
         </div>
       </main>
 
