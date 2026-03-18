@@ -124,6 +124,7 @@ function OvercrowdingMap() {
     const map = useRef<mapboxgl.Map | null>(null);
     const popup = useRef<mapboxgl.Popup | null>(null);
     const [stats, setStats] = useState<ConstituencyStats[]>([]);
+    const statsRef = useRef<ConstituencyStats[]>([]);
     const [cities, setCities] = useState<CityData[]>([]);
     const [selectedConstituency, setSelectedConstituency] = useState<ConstituencyStats | null>(null);
     const [selectedCity, setSelectedCity] = useState<CityData | null>(null);
@@ -136,7 +137,7 @@ function OvercrowdingMap() {
     const [scatterModalOpen, setScatterModalOpen] = useState(false);
 
     useEffect(() => {
-        fetch('/overcrowding_stats.json').then(r => r.json()).then((data: ConstituencyStats[]) => setStats(data));
+        fetch('/overcrowding_stats.json').then(r => r.json()).then((data: ConstituencyStats[]) => { setStats(data); statsRef.current = data; });
         fetch('/overcrowding_cities.json').then(r => r.json()).then((data: CityData[]) => setCities(data));
     }, []);
 
@@ -319,16 +320,17 @@ function OvercrowdingMap() {
 
     function onClick(event: mapboxgl.MapMouseEvent) {
         if (!map.current) return;
+        const currentStats = statsRef.current;
         // Try LSOA first (higher zoom), then constituency
         let features = map.current.queryRenderedFeatures(event.point, { layers: ['lsoa-fill'] });
         if (features.length > 0) {
             const constCode = features[0].properties?.PCON24CD;
-            if (constCode) { const match = stats.find(d => d.PCON24CD === constCode); if (match) selectConstituency(match); return; }
+            if (constCode) { const match = currentStats.find(d => d.PCON24CD === constCode); if (match) selectConstituency(match); return; }
         }
         features = map.current.queryRenderedFeatures(event.point, { layers: ['const-fill'] });
         if (features.length > 0) {
             const code = features[0].properties?.PCON24CD;
-            if (code) { const match = stats.find(d => d.PCON24CD === code); if (match) selectConstituency(match); }
+            if (code) { const match = currentStats.find(d => d.PCON24CD === code); if (match) selectConstituency(match); }
         }
     }
 
