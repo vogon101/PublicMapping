@@ -130,7 +130,8 @@ const CONST_TILESET = 'freddie-yimby.overcrowding_constituencies';
 const CONST_LAYER = 'overcrowding-constituencies';
 const MSOA_TILESET = 'freddie-yimby.overcrowding_msoa';
 const MSOA_LAYER = 'overcrowding-msoa';
-const DETAIL_ZOOM = 8.5;
+const DETAIL_ZOOM_START = 9;
+const DETAIL_ZOOM_END = 10;
 
 const FILL_COLOR_EXPR: mapboxgl.Expression = [
     'interpolate', ['linear'], ['get', 'pct_overcrowded'],
@@ -192,7 +193,6 @@ function OvercrowdingMap() {
     const [copied, setCopied] = useState(false);
     const [activeTab, setActiveTab] = useState<Tab>('constituencies');
     const [scatterModalOpen, setScatterModalOpen] = useState(false);
-
     useEffect(() => {
         fetch('/overcrowding_stats.json').then(r => r.json()).then((data: ConstituencyStats[]) => { setStats(data); statsRef.current = data; });
         fetch('/overcrowding_cities.json').then(r => r.json()).then((data: CityData[]) => setCities(data));
@@ -260,13 +260,27 @@ function OvercrowdingMap() {
         if (!m) return;
 
         m.addSource('overcrowding', { type: 'vector', url: `mapbox://${CONST_TILESET}` });
-        m.addLayer({ id: 'const-fill', type: 'fill', source: 'overcrowding', 'source-layer': CONST_LAYER, paint: { 'fill-color': FILL_COLOR_EXPR, 'fill-opacity': ['interpolate', ['linear'], ['zoom'], DETAIL_ZOOM - 1, 0.7, DETAIL_ZOOM, 0] } });
-        m.addLayer({ id: 'const-border', type: 'line', source: 'overcrowding', 'source-layer': CONST_LAYER, paint: { 'line-color': ['interpolate', ['linear'], ['zoom'], DETAIL_ZOOM - 1, '#ffffff', DETAIL_ZOOM, '#555555'], 'line-width': ['interpolate', ['linear'], ['zoom'], DETAIL_ZOOM - 1, 0.5, DETAIL_ZOOM, 1.5], 'line-opacity': ['interpolate', ['linear'], ['zoom'], DETAIL_ZOOM - 1, 0.5, DETAIL_ZOOM, 0.7] } });
+        m.addLayer({ id: 'const-fill', type: 'fill', source: 'overcrowding', 'source-layer': CONST_LAYER, paint: {
+            'fill-color': FILL_COLOR_EXPR,
+            'fill-opacity': ['interpolate', ['linear'], ['zoom'], DETAIL_ZOOM_START, 0.7, DETAIL_ZOOM_END, 0],
+        } });
+        m.addLayer({ id: 'const-border', type: 'line', source: 'overcrowding', 'source-layer': CONST_LAYER, paint: {
+            'line-color': ['interpolate', ['linear'], ['zoom'], DETAIL_ZOOM_START, '#ffffff', DETAIL_ZOOM_END, '#666666'],
+            'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.5, 9, 1, 11, 2, 14, 2.5],
+            'line-opacity': ['interpolate', ['linear'], ['zoom'], 5, 0.5, 9, 0.7, 11, 0.9],
+        } });
         m.addLayer({ id: 'const-selected', type: 'line', source: 'overcrowding', 'source-layer': CONST_LAYER, paint: { 'line-color': '#353741', 'line-width': 3 }, filter: ['==', 'PCON24CD', ''] });
 
         m.addSource('overcrowding-msoa', { type: 'vector', url: `mapbox://${MSOA_TILESET}` });
-        m.addLayer({ id: 'msoa-fill', type: 'fill', source: 'overcrowding-msoa', 'source-layer': MSOA_LAYER, paint: { 'fill-color': FILL_COLOR_EXPR, 'fill-opacity': ['interpolate', ['linear'], ['zoom'], DETAIL_ZOOM - 1, 0, DETAIL_ZOOM, 0.7] } });
-        m.addLayer({ id: 'msoa-border', type: 'line', source: 'overcrowding-msoa', 'source-layer': MSOA_LAYER, paint: { 'line-color': '#666666', 'line-width': 0.3, 'line-opacity': ['interpolate', ['linear'], ['zoom'], DETAIL_ZOOM - 1, 0, DETAIL_ZOOM, 0.5] } });
+        m.addLayer({ id: 'msoa-fill', type: 'fill', source: 'overcrowding-msoa', 'source-layer': MSOA_LAYER, paint: {
+            'fill-color': FILL_COLOR_EXPR,
+            'fill-opacity': ['interpolate', ['linear'], ['zoom'], DETAIL_ZOOM_START, 0, DETAIL_ZOOM_END, 0.7],
+        } });
+        m.addLayer({ id: 'msoa-border', type: 'line', source: 'overcrowding-msoa', 'source-layer': MSOA_LAYER, paint: {
+            'line-color': '#666666',
+            'line-width': 0.3,
+            'line-opacity': ['interpolate', ['linear'], ['zoom'], DETAIL_ZOOM_START, 0, DETAIL_ZOOM_END, 0.5],
+        } });
 
         popup.current = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, offset: 12 });
 
@@ -291,11 +305,23 @@ function OvercrowdingMap() {
                 `<div style="font-family:'Lato',sans-serif;font-size:13px;line-height:1.5">${name ? `<div style="font-weight:700;color:#353741">${name}</div>` : ''}<div style="font-weight:700;color:${getBandColor(pct)}">${pct.toFixed(1)}% overcrowded</div></div>`
             ).addTo(m);
         });
+
     }, []);
 
     // ── Stable callbacks ────────────────────────────────────────────────────
 
-    const selectConstituency = useCallback((d: ConstituencyStats) => {
+    // Zoom to a feature's bounds using its geometry
+    const zoomToFeature = useCallback((geom: GeoJSON.Geometry) => {
+        const m = map.current;
+        if (!m) return;
+        const bounds = new mapboxgl.LngLatBounds();
+        if (geom.type === 'Polygon') (geom.coordinates[0] as [number, number][]).forEach(c => bounds.extend(c));
+        else if (geom.type === 'MultiPolygon') geom.coordinates.forEach((poly: number[][][]) => (poly[0] as unknown as [number, number][]).forEach(c => bounds.extend(c)));
+        if (!bounds.isEmpty()) m.fitBounds(bounds, { padding: 50, maxZoom: 11, duration: 1200 });
+    }, []);
+
+    // Select constituency — optionally with a pre-fetched feature for immediate zoom
+    const selectConstituency = useCallback((d: ConstituencyStats, feature?: mapboxgl.MapboxGeoJSONFeature) => {
         setSelectedConstituency(d);
         setSelectedCity(null);
         setActiveTab('constituencies');
@@ -303,15 +329,24 @@ function OvercrowdingMap() {
         const m = map.current;
         if (!m) return;
         m.setFilter('const-selected', ['==', 'PCON24CD', d.PCON24CD]);
-        const features = m.querySourceFeatures('overcrowding', { sourceLayer: CONST_LAYER, filter: ['==', 'PCON24CD', d.PCON24CD] });
-        if (features.length > 0 && features[0].geometry) {
-            const bounds = new mapboxgl.LngLatBounds();
-            const geom = features[0].geometry;
-            if (geom.type === 'Polygon') (geom.coordinates[0] as [number, number][]).forEach(c => bounds.extend(c));
-            else if (geom.type === 'MultiPolygon') geom.coordinates.forEach((poly: number[][][]) => (poly[0] as unknown as [number, number][]).forEach(c => bounds.extend(c)));
-            if (!bounds.isEmpty()) m.fitBounds(bounds, { padding: 50, maxZoom: 11 });
+
+        if (feature?.geometry) {
+            // Map click path — use the already-available rendered geometry
+            zoomToFeature(feature.geometry);
+        } else {
+            // List click path — query rendered features (fast, only checks current viewport tiles)
+            // If feature not in viewport, querySourceFeatures as fallback
+            const rendered = m.queryRenderedFeatures({ layers: ['const-fill', 'const-border'], filter: ['==', 'PCON24CD', d.PCON24CD] });
+            if (rendered.length > 0 && rendered[0].geometry) {
+                zoomToFeature(rendered[0].geometry);
+            } else {
+                const source = m.querySourceFeatures('overcrowding', { sourceLayer: CONST_LAYER, filter: ['==', 'PCON24CD', d.PCON24CD] });
+                if (source.length > 0 && source[0].geometry) {
+                    zoomToFeature(source[0].geometry);
+                }
+            }
         }
-    }, []);
+    }, [zoomToFeature]);
 
     const selectCity = useCallback((city: CityData) => {
         setSelectedCity(city); setSelectedConstituency(null); setPanelOpen(true);
@@ -329,15 +364,19 @@ function OvercrowdingMap() {
     const onClick = useCallback((event: mapboxgl.MapMouseEvent) => {
         if (!map.current) return;
         const s = statsRef.current;
+        // Try MSOA first (visible at high zoom), then constituency fill
         let features = map.current.queryRenderedFeatures(event.point, { layers: ['msoa-fill'] });
         if (features.length > 0) {
             const code = features[0].properties?.PCON24CD;
-            if (code) { const match = s.find(d => d.PCON24CD === code); if (match) { selectConstituency(match); return; } }
+            if (code) {
+                const match = s.find(d => d.PCON24CD === code);
+                if (match) { selectConstituency(match); return; }
+            }
         }
         features = map.current.queryRenderedFeatures(event.point, { layers: ['const-fill'] });
         if (features.length > 0) {
             const code = features[0].properties?.PCON24CD;
-            if (code) { const match = s.find(d => d.PCON24CD === code); if (match) selectConstituency(match); }
+            if (code) { const match = s.find(d => d.PCON24CD === code); if (match) selectConstituency(match, features[0]); }
         }
     }, [selectConstituency]);
 

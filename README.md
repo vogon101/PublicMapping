@@ -1,50 +1,42 @@
-# React + TypeScript + Vite
+# PublicMapping
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+YIMBY Alliance public-facing maps. Next.js app with Mapbox GL JS.
 
-Currently, two official plugins are available:
+## Mapbox Tilesets
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Map layers use Mapbox vector tilesets hosted under the `freddie-yimby` account. Tileset definitions and upload tooling live in the sibling **yimby-data** repo.
 
-## Expanding the ESLint configuration
+### Tilesets used by the overcrowding map
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+| Tileset ID | YAML definition | Description |
+|---|---|---|
+| `freddie-yimby.overcrowding_constituencies` | `mts-defs/overcrowding-constituencies.yaml` | Constituency boundaries with overcrowding stats |
+| `freddie-yimby.overcrowding_msoa` | `mts-defs/overcrowding-msoa.yaml` | MSOA-level detail layer |
 
-- Configure the top-level `parserOptions` property like this:
+### Re-uploading a tileset
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+From the **yimby-data** repo root:
+
+```bash
+# Preview what will be uploaded
+uv run python tools/mapbox-tools.py --defs mts-defs/<definition>.yaml show
+
+# Full run: delete old source, update recipe, and publish
+# (interactive — prompts for confirmation at each step)
+uv run python tools/mapbox-tools.py --defs mts-defs/<definition>.yaml run <key>
+
+# Non-interactive (e.g. for the constituency tileset):
+# Note: must delete source separately as Mapbox CLI requires interactive confirmation
+uv run tilesets delete-source freddie-yimby <source_id> --force
+uv run python tools/mapbox-tools.py \
+  --defs mts-defs/<definition>.yaml \
+  run <key> --update-recipe --publish --no-prompt
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+The tool reads `.env` in `yimby-data/` for `MAPBOX_TOKEN`. Source GeoJSON files live in `yimby-data/processed-files/`.
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+### Adjusting geometry simplification
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+Tileset YAMLs support a `simplify` parameter (tolerance in source CRS units — degrees for EPSG:4326). This is applied before upload using `shapely.simplify(preserve_topology=True)`. Mapbox MTS applies additional per-zoom simplification during tiling.
+
+Example: `simplify: 0.001` in `overcrowding-constituencies.yaml` gives ~111m tolerance, reducing vertices by ~67%.
